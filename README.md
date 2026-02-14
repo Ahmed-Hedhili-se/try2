@@ -9,13 +9,15 @@ A sophisticated full-stack web application featuring a premium React frontend, a
 - **Dynamic Auth**: Seamless switching between Login and Sign-up modes.
 - **City Tracking**: Automatically captures and displays user city (`ville`).
 
-### 🛠️ Administrative Tools
+### 🛠️ Administrative & Analysis Tools
 - **Admin Dashboard**: Dedicated management interface at `/admin.html`.
+- **Analyse Reports**: Premium visualization interface at `/analyse.html` for tracking all signalisations.
 - **Approval Workflow**: New accounts are created as `Pending` and must be approved by an administrator before they can log in.
 - **User Management**: Admins can approve, edit profile details (Name, Role, City), or delete users directly from the dashboard.
 
 ### 🔐 Security & Data
-- **RBAC Logic**: Automatic permission mapping for different roles (Mère, Tante, Psychologue, etc.).
+- **RBAC Logic**: Robust Role-Based Access Control filtering features and API access.
+- **Session Bridge**: Built-in synchronization between React (port 5173) and static pages (port 5000).
 - **Password Hashing**: Secure storage using `bcryptjs`.
 - **SQLite Database**: Lightweight, portable, and efficient data management.
 
@@ -30,8 +32,8 @@ A sophisticated full-stack web application featuring a premium React frontend, a
 ├── server/          # Node.js Express Backend
 │   ├── index.js     # API & Server Logic
 │   ├── database.js  # SQLite Connection & Schema
-│   ├── routes/      # API Route modules (e.g., admin.js)
-│   └── public/      # Static Admin Dashboard (admin.html)
+│   ├── routes/      # API Route modules (admin.js, reports.js)
+│   └── public/      # Static Assets (admin.html, analyse.html, dashboard.html)
 └── .gitignore       # Git ignore rules
 ```
 
@@ -78,12 +80,7 @@ npm run dev
 If you encounter "Cannot reach server" or other errors:
 
 1.  **Check Backend**: Ensure the terminal running `npm start` in the `server` folder is still alive and showing no errors.
-2.  **Verify Setup**: Run the environment check script:
-    ```bash
-    cd server
-    node check_env.js
-    ```
-    This will verify database connectivity and dependency health.
+2.  **Verify Setup**: Ensure all dependencies are installed (`npm install`) and the database file (`database.sqlite`) exists.
 3.  **Browser Console**: Press **F12** and check the **Console** tab for specific error messages (e.g., Connection Refused).
 
 ---
