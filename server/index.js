@@ -2,26 +2,49 @@ import express from 'express';
 import cors from 'cors';
 import bcrypt from 'bcryptjs';
 import db from './database.js';
+import adminRoutes from './routes/admin.js';
+import open from 'open';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const app = express();
 app.use(cors());
 app.use(express.json());
+app.use(express.static(path.join(__dirname, 'public')));
+
+app.use('/api/admin', adminRoutes);
 
 const PORT = 5000;
 
 // Sign Up Endpoint
 app.post('/api/signup', async (req, res) => {
-    const { fullname, email, password, role } = req.body;
+    const { fullname, email, password, role, ville } = req.body;
 
-    if (!fullname || !email || !password || !role) {
+    if (!fullname || !email || !password || !role || !ville) {
         return res.status(400).json({ message: 'All fields are required' });
     }
 
     try {
         const hashedPassword = await bcrypt.hash(password, 10);
-        const sql = `INSERT INTO users (fullname, email, password, role) VALUES (?, ?, ?, ?)`;
 
-        db.run(sql, [fullname, email, hashedPassword, role], function (err) {
+        // Automated permission calculation based on role
+        let signalisation_psy = 0;
+        let signalisation_other = 0;
+        let see_all = 0;
+
+        if (role === 'psychologues' || role === 'responsable sociale') {
+            signalisation_psy = 1;
+        } else if (['mere', 'tante', 'educatrice'].includes(role)) {
+            signalisation_other = 1;
+        } else if (['directeur', 'bureau national'].includes(role)) {
+            see_all = 1;
+        }
+
+        const sql = `INSERT INTO users (full_name, mail, password, role, ville, signalisation_psy, signalisation_other, see_all, is_approved) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+
+        db.run(sql, [fullname, email, hashedPassword, role, ville, signalisation_psy, signalisation_other, see_all, 0], function (err) {
             if (err) {
                 if (err.message.includes('UNIQUE constraint failed')) {
                     return res.status(400).json({ message: 'User already exists' });
@@ -43,13 +66,17 @@ app.post('/api/login', (req, res) => {
         return res.status(400).json({ message: 'Email and password are required' });
     }
 
-    const sql = `SELECT * FROM users WHERE email = ?`;
+    const sql = `SELECT * FROM users WHERE mail = ?`;
     db.get(sql, [email], async (err, user) => {
         if (err) {
             return res.status(500).json({ message: err.message });
         }
         if (!user) {
             return res.status(404).json({ message: 'the user not exist' });
+        }
+
+        if (user.is_approved === 0) {
+            return res.status(403).json({ message: 'Account pending administrator approval' });
         }
 
         const isMatch = await bcrypt.compare(password, user.password);
@@ -60,15 +87,25 @@ app.post('/api/login', (req, res) => {
         res.status(200).json({
             message: 'Login successful',
             user: {
-                id: user.id,
-                fullname: user.fullname,
-                email: user.email,
-                role: user.role
+                id: user.id_user,
+                fullname: user.full_name,
+                email: user.mail,
+                role: user.role,
+                ville: user.ville,
+                signalisation_psy: user.signalisation_psy,
+                signalisation_other: user.signalisation_other,
+                see_all: user.see_all,
+                is_approved: user.is_approved
             }
         });
     });
 });
 
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
     console.log(`Server running on http://localhost:${PORT}`);
+    try {
+        await open(`http://localhost:${PORT}/admin.html`);
+    } catch (err) {
+        console.error('Failed to open browser:', err);
+    }
 });

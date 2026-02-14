@@ -10,7 +10,8 @@ function App() {
         fullname: '',
         email: '',
         password: '',
-        role: 'user'
+        role: 'mere',
+        ville: ''
     });
     const [message, setMessage] = useState({ text: '', type: '' });
 
@@ -43,7 +44,7 @@ function App() {
 
     const handleLogout = () => {
         setUser(null);
-        setFormData({ fullname: '', email: '', password: '', role: 'user' });
+        setFormData({ fullname: '', email: '', password: '', role: 'mere', ville: '' });
         setMessage({ text: 'Logged out successfully', type: 'success' });
     };
 
@@ -57,6 +58,7 @@ function App() {
                         <p><strong>Full Name:</strong> {user.fullname}</p>
                         <p><strong>Email:</strong> {user.email}</p>
                         <p><strong>Role:</strong> {user.role}</p>
+                        <p><strong>City (Ville):</strong> {user.ville}</p>
                     </div>
                     <button onClick={handleLogout}>Logout</button>
                 </div>
@@ -115,10 +117,24 @@ function App() {
                         <div className="form-group">
                             <label>Role</label>
                             <select name="role" value={formData.role} onChange={handleChange}>
-                                <option value="user">User</option>
-                                <option value="admin">Admin</option>
-                                <option value="moderator">Moderator</option>
+                                <option value="mere">Mère SOS</option>
+                                <option value="tante">Tante SOS</option>
+                                <option value="educatrice">Educatrice</option>
                             </select>
+                        </div>
+                    )}
+
+                    {!isLogin && (
+                        <div className="form-group">
+                            <label>City (Ville)</label>
+                            <input
+                                type="text"
+                                name="ville"
+                                placeholder="Paris"
+                                value={formData.ville}
+                                onChange={handleChange}
+                                required
+                            />
                         </div>
                     )}
 

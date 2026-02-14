@@ -1,65 +1,93 @@
-# Premium Auth Web Application
+# Premium Admin Auth & Approval Web App
 
-A full-stack web application featuring a premium Login/Sign-up interface with a Node.js Express backend and SQLite database.
+A sophisticated full-stack web application featuring a premium React frontend, a secure Node.js Express backend, and a complete administrative approval workflow.
 
-## 🚀 Features
+## 🌟 Key Features
 
-- **Premium UI**: Modern gradients, glassmorphism, and smooth animations using Styled-like CSS.
-- **Dynamic Auth**: Toggle between Login and Sign-up modes.
-- **Secure Backend**: Password hashing via `bcryptjs`.
-- **Lightweight DB**: User data stored in a portable SQLite database.
-- **RBAC Ready**: Supports `fullname`, `email`, `password`, and `role` fields.
+### 💎 User Experience
+- **Premium UI**: Modern gradients, glassmorphism, and smooth transitions built with custom CSS.
+- **Dynamic Auth**: Seamless switching between Login and Sign-up modes.
+- **City Tracking**: Automatically captures and displays user city (`ville`).
 
-## 🛠️ Project Structure
+### 🛠️ Administrative Tools
+- **Admin Dashboard**: Dedicated management interface at `/admin.html`.
+- **Approval Workflow**: New accounts are created as `Pending` and must be approved by an administrator before they can log in.
+- **User Management**: Admins can approve, edit profile details (Name, Role, City), or delete users directly from the dashboard.
+
+### 🔐 Security & Data
+- **RBAC Logic**: Automatic permission mapping for different roles (Mère, Tante, Psychologue, etc.).
+- **Password Hashing**: Secure storage using `bcryptjs`.
+- **SQLite Database**: Lightweight, portable, and efficient data management.
+
+---
+
+## 🏗️ Project Structure
 
 ```text
-├── client/          # Vite + React Frontend
-│   └── src/         # UI Components and Logic
+├── client/          # vite + React Frontend
+│   ├── src/         # UI Components and state logic
+│   └── index.css    # Premium CSS design system
 ├── server/          # Node.js Express Backend
-│   ├── index.js     # API Endpoints
-│   └── database.js  # SQLite Setup
+│   ├── index.js     # API & Server Logic
+│   ├── database.js  # SQLite Connection & Schema
+│   ├── routes/      # API Route modules (e.g., admin.js)
+│   └── public/      # Static Admin Dashboard (admin.html)
 └── .gitignore       # Git ignore rules
 ```
 
-## 📦 Installation & Setup
+---
 
-### 1. Clone the repository
-```bash
-git clone <your-repo-url>
-cd <repo-folder>
-```
+## 🚀 Getting Started
 
-### 2. Setup Backend
+### 1. Installation
+Clone the repository and install dependencies for both the server and client:
+
+**Backend:**
 ```bash
 cd server
 npm install
 ```
 
-### 3. Setup Frontend
+**Frontend:**
 ```bash
-cd ../client
+cd client
 npm install
 ```
 
-## 🏃 Running the Application
+### 2. Running Local Dev Servers
+The application is designed to auto-open the admin interface on startup.
 
-### Start the Backend
-Navigate to the `server` directory and run:
+**Start the Backend:**
 ```bash
+cd server
 npm start
 ```
-The server will start on `http://localhost:5000`.
+*The server runs on `http://localhost:5000` and will try to open `http://localhost:5000/admin.html` automatically.*
 
-### Start the Frontend
-Navigate to the `client` directory and run:
+**Start the Frontend:**
 ```bash
+cd client
 npm run dev
 ```
-The app will be available at `http://localhost:5173`.
+*The React app runs on `http://localhost:5173`.*
 
-## 🧪 Testing
+---
 
-1. Go to `http://localhost:5173`.
-2. Click **Sign Up** to create a user.
-3. Choose a role (User, Admin, etc.).
-4. Log in with your new credentials to view the **Home** dashboard.
+## 🧪 Testing the Workflow
+
+1.  **Sign Up**: Go to `http://localhost:5173`, choose a role (Mère SOS, etc.), and register.
+2.  **Verify Pending**: Try to log in immediately—the app will inform you that your account is pending approval.
+3.  **Approve Account**: Open the Admin Dashboard at `http://localhost:5000/admin.html`. Find your new user and click **Approve**.
+4.  **Success**: Log in again from the main app. You should now be granted access to your home dashboard!
+
+---
+
+## 📋 Role & Permission Mapping
+
+The system automatically handles permissions based on the chosen role:
+- **Mère/Tante/Educatrice**: Assigned to `signalisation_other`.
+- **Psychologues/Responsable Sociale**: Assigned to `signalisation_psy`.
+- **Directeur/Bureau National**: Assigned to `see_all` (Managed manually).
+
+---
+*Built with ❤️ by Antigravity*

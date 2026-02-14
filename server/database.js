@@ -11,11 +11,16 @@ const db = new sqlite3.Database(dbPath, (err) => {
   } else {
     console.log('Connected to SQLite database.');
     db.run(`CREATE TABLE IF NOT EXISTS users (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      fullname TEXT,
-      email TEXT UNIQUE,
+      id_user INTEGER PRIMARY KEY AUTOINCREMENT,
+      full_name TEXT,
+      role TEXT,
+      mail TEXT UNIQUE,
       password TEXT,
-      role TEXT
+      ville TEXT,
+      signalisation_other INTEGER DEFAULT 0,
+      signalisation_psy INTEGER DEFAULT 0,
+      see_all INTEGER DEFAULT 0,
+      is_approved INTEGER DEFAULT 0
     )`, (err) => {
       if (err) {
         console.error('Error creating table', err.message);
