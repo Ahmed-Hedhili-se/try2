@@ -3,7 +3,9 @@ import cors from 'cors';
 import bcrypt from 'bcryptjs';
 import db from './database.js';
 import adminRoutes from './routes/admin.js';
+import reportsRoutes from './routes/reports.js';
 import open from 'open';
+import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -13,8 +15,14 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+if (!fs.existsSync(path.join(__dirname, 'uploads'))) {
+    fs.mkdirSync(path.join(__dirname, 'uploads'));
+}
 
 app.use('/api/admin', adminRoutes);
+app.use('/api', reportsRoutes);
 
 const PORT = 5000;
 

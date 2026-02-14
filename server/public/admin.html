@@ -24,9 +24,14 @@
                     Admin Dashboard</h1>
                 <p class="text-slate-500">Manage user accounts and approvals</p>
             </div>
-            <button onclick="fetchUsers()"
-                class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition shadow-sm font-semibold">Refresh
-                List</button>
+            <div class="space-x-4">
+                <button onclick="openAddModal()"
+                    class="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition shadow-sm font-semibold">Add
+                    User</button>
+                <button onclick="fetchUsers()"
+                    class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition shadow-sm font-semibold">Refresh
+                    List</button>
+            </div>
         </header>
 
         <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
@@ -77,12 +82,79 @@
                     <input type="text" id="editVille"
                         class="w-full p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
                 </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">New Password (leave blank to keep
+                        current)</label>
+                    <div class="relative">
+                        <input type="password" id="editPassword"
+                            class="w-full p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
+                        <button type="button" onclick="togglePassword('editPassword')"
+                            class="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
                 <div class="flex justify-end gap-3 mt-8">
                     <button type="button" onclick="closeModal()"
                         class="px-4 py-2 text-slate-600 font-semibold">Cancel</button>
                     <button type="submit"
                         class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition font-semibold">Save
                         Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Modal -->
+    <div id="addModal" class="hidden fixed inset-0 bg-black/50 flex justify-center items-center backdrop-blur-sm">
+        <div class="bg-white p-8 rounded-xl w-full max-w-md shadow-2xl">
+            <h2 class="text-2xl font-bold mb-6 text-slate-900">Add New User</h2>
+            <form id="addForm" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Full Name</label>
+                    <input type="text" id="addFullName" required
+                        class="w-full p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Email (Mail)</label>
+                    <input type="email" id="addMail" required
+                        class="w-full p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Password</label>
+                    <input type="password" id="addPassword" required
+                        class="w-full p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Role</label>
+                    <select id="addRole" required
+                        class="w-full p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
+                        <option value="mere">Mère SOS</option>
+                        <option value="tante">Tante SOS</option>
+                        <option value="educatrice">Educatrice</option>
+                        <option value="psychologues">Psychologues</option>
+                        <option value="responsable sociale">Responsable sociale</option>
+                        <option value="directeur">Directeur</option>
+                        <option value="bureau national">Bureau national</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">City (Ville)</label>
+                    <input type="text" id="addVille" required
+                        class="w-full p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
+                </div>
+                <div class="flex justify-end gap-3 mt-8">
+                    <button type="button" onclick="closeAddModal()"
+                        class="px-4 py-2 text-slate-600 font-semibold">Cancel</button>
+                    <button type="submit"
+                        class="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition font-semibold">Create
+                        User</button>
                 </div>
             </form>
         </div>
@@ -143,7 +215,50 @@
 
         function closeModal() {
             document.getElementById('editModal').classList.add('hidden');
+            document.getElementById('editPassword').value = ''; // Clear password field
         }
+
+        function togglePassword(id) {
+            const input = document.getElementById(id);
+            input.type = input.type === 'password' ? 'text' : 'password';
+        }
+
+        function openAddModal() {
+            document.getElementById('addModal').classList.remove('hidden');
+        }
+
+        function closeAddModal() {
+            document.getElementById('addModal').classList.add('hidden');
+            document.getElementById('addForm').reset();
+        }
+
+        document.getElementById('addForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const newUser = {
+                full_name: document.getElementById('addFullName').value,
+                mail: document.getElementById('addMail').value,
+                password: document.getElementById('addPassword').value,
+                role: document.getElementById('addRole').value,
+                ville: document.getElementById('addVille').value
+            };
+            try {
+                const res = await fetch('/api/admin/users', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(newUser)
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    alert('User created successfully');
+                    closeAddModal();
+                    fetchUsers();
+                } else {
+                    alert(data.message || 'Error creating user');
+                }
+            } catch (err) {
+                alert('Error creating user');
+            }
+        };
 
         document.getElementById('editForm').onsubmit = async (e) => {
             e.preventDefault();
@@ -153,6 +268,10 @@
                 role: document.getElementById('editRole').value,
                 ville: document.getElementById('editVille').value
             };
+
+            const password = document.getElementById('editPassword').value;
+            if (password) updated.password = password;
+
             await fetch(`/api/admin/users/${id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },

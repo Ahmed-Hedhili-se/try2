@@ -26,6 +26,37 @@ const db = new sqlite3.Database(dbPath, (err) => {
         console.error('Error creating table', err.message);
       }
     });
+
+    db.run(`
+      CREATE TABLE IF NOT EXISTS signalisation (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        report_id TEXT UNIQUE,
+        created_at TEXT,
+        status TEXT DEFAULT 'SUBMITTED',
+        anonymous INTEGER DEFAULT 0,
+        submitter_id INTEGER,
+        child_age TEXT,
+        relationship TEXT,
+        location TEXT,
+        type TEXT,
+        description TEXT,
+        photo_filename TEXT,
+        photo_mimetype TEXT,
+        photo_size INTEGER,
+        audio_filename TEXT,
+        audio_mimetype TEXT,
+        audio_size INTEGER,
+        psy_notes TEXT,
+        urgency TEXT,
+        director_decision TEXT,
+        director_notes TEXT,
+        FOREIGN KEY (submitter_id) REFERENCES users (id_user)
+      )
+    `, (err) => {
+      if (err) {
+        console.error('Error creating table signalisation', err.message);
+      }
+    });
   }
 });
 
