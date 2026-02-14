@@ -1,0 +1,15 @@
+# Node dependencies
+**/node_modules/
+
+# Environment variables
+**/.env
+
+# SQLite database
+server/database.sqlite
+
+# Build outputs
+client/dist/
+
+# OS files
+.DS_Store
+Thumbs.db
