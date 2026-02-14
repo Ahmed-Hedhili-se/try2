@@ -37,7 +37,12 @@ function App() {
                 setTimeout(() => setIsLogin(true), 2000);
             }
         } catch (err) {
-            const errorMsg = err.response?.data?.message || 'Something went wrong';
+            let errorMsg = 'Something went wrong';
+            if (!err.response) {
+                errorMsg = 'Cannot reach server. Is the backend running?';
+            } else {
+                errorMsg = err.response.data?.message || 'Server error';
+            }
             setMessage({ text: errorMsg, type: 'error' });
         }
     };

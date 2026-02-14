@@ -73,7 +73,20 @@ npm run dev
 
 ---
 
-## 🧪 Testing the Workflow
+## 🛠️ Troubleshooting
+
+If you encounter "Cannot reach server" or other errors:
+
+1.  **Check Backend**: Ensure the terminal running `npm start` in the `server` folder is still alive and showing no errors.
+2.  **Verify Setup**: Run the environment check script:
+    ```bash
+    cd server
+    node check_env.js
+    ```
+    This will verify database connectivity and dependency health.
+3.  **Browser Console**: Press **F12** and check the **Console** tab for specific error messages (e.g., Connection Refused).
+
+---
 
 1.  **Sign Up**: Go to `http://localhost:5173`, choose a role (Mère SOS, etc.), and register.
 2.  **Verify Pending**: Try to log in immediately—the app will inform you that your account is pending approval.
