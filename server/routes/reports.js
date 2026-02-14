@@ -89,7 +89,7 @@ router.get('/reports/all', (req, res) => {
 // GET all signalisations (for Analyse feature) - Protected by RBAC
 router.get('/signalisations', (req, res) => {
     const userRole = req.headers['x-user-role'];
-    const forbiddenRoles = ['mere', 'tante', 'educatrice'];
+    const forbiddenRoles = ['mere', 'tante', 'educatrice', 'responsable sociale'];
 
     if (forbiddenRoles.includes(userRole)) {
         return res.status(403).json({ message: 'Accès non autorisé' });

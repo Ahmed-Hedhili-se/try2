@@ -67,7 +67,7 @@ function App() {
                     <div className="nav-brand">SignalSafe</div>
                     <div className="nav-links">
                         <button className={view === 'home' ? 'active' : ''} onClick={() => setView('home')}>Dashboard</button>
-                        {!['mere', 'tante', 'educatrice'].includes(user.role) && (
+                        {!['mere', 'tante', 'educatrice', 'responsable sociale'].includes(user.role) && (
                             <button onClick={() => {
                                 const session = btoa(JSON.stringify(user));
                                 window.location.href = `http://localhost:5000/analyse.html?session=${session}`;
@@ -212,7 +212,7 @@ function Dashboard({ user, setView }) {
                     <h3>Actions</h3>
                     <div className="btn-group" style={{ display: 'flex', gap: '10px' }}>
                         <button className="btn primary" onClick={() => setView('report')}>📝 New Signalisation</button>
-                        {!['mere', 'tante', 'educatrice'].includes(user.role) && (
+                        {!['mere', 'tante', 'educatrice', 'responsable sociale'].includes(user.role) && (
                             <button className="btn secondary" style={{ background: '#4f46e5', color: 'white', border: 'none', borderRadius: '0.75rem', padding: '0.5rem 1rem', cursor: 'pointer' }} onClick={() => {
                                 const session = btoa(JSON.stringify(user));
                                 window.location.href = `http://localhost:5000/analyse.html?session=${session}`;
