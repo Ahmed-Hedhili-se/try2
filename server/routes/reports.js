@@ -35,24 +35,26 @@ router.post('/reports', upload.fields([
     { name: 'photo', maxCount: 1 },
     { name: 'audio', maxCount: 1 }
 ]), (req, res) => {
-    const { anonymous, childAge, relationship, location, type, description, submitterId } = req.body;
+    const { anonymous, village, abuser_name, child_name, childAge, relationship, location, type, description, urgency, submitterId } = req.body;
     const report_id = nanoid(12);
     const created_at = new Date().toISOString();
-    const isAnonymous = anonymous === 'true' ? 1 : 0;
+    const isAnonymous = anonymous === 'true' || anonymous === true ? 1 : 0;
 
     const photo = req.files['photo'] ? req.files['photo'][0] : null;
     const audio = req.files['audio'] ? req.files['audio'][0] : null;
 
     const sql = `INSERT INTO signalisation (
-        report_id, created_at, anonymous, submitter_id, child_age, 
-        relationship, location, type, description, 
+        report_id, created_at, anonymous, submitter_id, 
+        village, abuser_name, child_name,
+        child_age, relationship, location, type, description, urgency,
         photo_filename, photo_mimetype, photo_size,
         audio_filename, audio_mimetype, audio_size
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
 
     const params = [
-        report_id, created_at, isAnonymous, submitterId, childAge,
-        relationship, location, type, description,
+        report_id, created_at, isAnonymous, submitterId,
+        village, abuser_name, child_name,
+        childAge, relationship, location, type, description, urgency,
         photo?.filename, photo?.mimetype, photo?.size,
         audio?.filename, audio?.mimetype, audio?.size
     ];
@@ -61,7 +63,7 @@ router.post('/reports', upload.fields([
         if (err) {
             return res.status(500).json({ message: err.message });
         }
-        res.status(201).json({ message: 'Report submitted successfully', reportId: report_id });
+        res.status(201).json({ message: 'Report submitted successfully', reportId: report_id, id: this.lastID });
     });
 });
 
@@ -78,6 +80,22 @@ router.get('/reports/my', (req, res) => {
 // GET all reports (for psychologues/directeur)
 router.get('/reports/all', (req, res) => {
     const sql = `SELECT * FROM signalisation ORDER BY created_at DESC`;
+    db.all(sql, [], (err, rows) => {
+        if (err) return res.status(500).json({ message: err.message });
+        res.status(200).json(rows);
+    });
+});
+
+// GET all signalisations (for Analyse feature) - Protected by RBAC
+router.get('/signalisations', (req, res) => {
+    const userRole = req.headers['x-user-role'];
+    const forbiddenRoles = ['mere', 'tante', 'educatrice'];
+
+    if (forbiddenRoles.includes(userRole)) {
+        return res.status(403).json({ message: 'Accès non autorisé' });
+    }
+
+    const sql = `SELECT * FROM signalisation ORDER BY id DESC`;
     db.all(sql, [], (err, rows) => {
         if (err) return res.status(500).json({ message: err.message });
         res.status(200).json(rows);

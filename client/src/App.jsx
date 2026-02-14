@@ -5,7 +5,10 @@ const API_URL = 'http://localhost:5000/api';
 
 function App() {
     const [isLogin, setIsLogin] = useState(true);
-    const [user, setUser] = useState(null);
+    const [user, setUser] = useState(() => {
+        const saved = localStorage.getItem('user');
+        return saved ? JSON.parse(saved) : null;
+    });
     const [view, setView] = useState('home'); // home, report, admin_temp
     const [formData, setFormData] = useState({
         fullname: '',
@@ -31,6 +34,7 @@ function App() {
                     password: formData.password
                 });
                 setMessage({ text: 'Login successful!', type: 'success' });
+                localStorage.setItem('user', JSON.stringify(res.data.user));
                 setTimeout(() => setUser(res.data.user), 1000);
             } else {
                 const res = await axios.post(`${API_URL}/signup`, formData);
@@ -51,6 +55,7 @@ function App() {
     const handleLogout = () => {
         setUser(null);
         setView('home');
+        localStorage.removeItem('user');
         setFormData({ fullname: '', email: '', password: '', role: 'mere', ville: '' });
         setMessage({ text: 'Logged out successfully', type: 'success' });
     };
@@ -62,6 +67,12 @@ function App() {
                     <div className="nav-brand">SignalSafe</div>
                     <div className="nav-links">
                         <button className={view === 'home' ? 'active' : ''} onClick={() => setView('home')}>Dashboard</button>
+                        {!['mere', 'tante', 'educatrice'].includes(user.role) && (
+                            <button onClick={() => {
+                                const session = btoa(JSON.stringify(user));
+                                window.location.href = `http://localhost:5000/analyse.html?session=${session}`;
+                            }}>Analyse</button>
+                        )}
                         <button className={view === 'report' ? 'active' : ''} onClick={() => setView('report')}>New Signalisation</button>
                         <button className="logout-btn" onClick={handleLogout}>Logout</button>
                     </div>
@@ -199,7 +210,15 @@ function Dashboard({ user, setView }) {
                 </div>
                 <div className="stat-card">
                     <h3>Actions</h3>
-                    <button className="btn primary" onClick={() => setView('report')}>📝 New Signalisation</button>
+                    <div className="btn-group" style={{ display: 'flex', gap: '10px' }}>
+                        <button className="btn primary" onClick={() => setView('report')}>📝 New Signalisation</button>
+                        {!['mere', 'tante', 'educatrice'].includes(user.role) && (
+                            <button className="btn secondary" style={{ background: '#4f46e5', color: 'white', border: 'none', borderRadius: '0.75rem', padding: '0.5rem 1rem', cursor: 'pointer' }} onClick={() => {
+                                const session = btoa(JSON.stringify(user));
+                                window.location.href = `http://localhost:5000/analyse.html?session=${session}`;
+                            }}>📊 Analyse Reports</button>
+                        )}
+                    </div>
                 </div>
             </div>
 
@@ -232,43 +251,85 @@ function Dashboard({ user, setView }) {
 
 function SignalisationForm({ user, setView }) {
     const [reportData, setReportData] = useState({
-        childAge: '',
-        relationship: '',
+        child_name: '',
+        village: '',
+        abuser_name: '',
         type: '',
         location: '',
         description: '',
+        urgency_level: '',
         anonymous: false
     });
-    const [photo, setPhoto] = useState(null);
-    const [audio, setAudio] = useState(null);
+    const [invalidFields, setInvalidFields] = useState(new Set());
     const [submitting, setSubmitting] = useState(false);
     const [msg, setMsg] = useState({ text: '', type: '' });
 
-    const handleFormChange = (e) => {
-        const value = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
-        setReportData({ ...reportData, [e.target.name]: value });
+    const validateField = (name, value) => {
+        const required = ['child_name', 'village', 'type', 'location', 'description', 'urgency_level'];
+        if (required.includes(name)) {
+            if (!value || (typeof value === 'string' && !value.trim())) {
+                setInvalidFields(prev => new Set(prev).add(name));
+                return false;
+            } else {
+                setInvalidFields(prev => {
+                    const next = new Set(prev);
+                    next.delete(name);
+                    return next;
+                });
+                return true;
+            }
+        }
+        return true;
     };
 
-    const handleFileChange = (e) => {
-        if (e.target.name === 'photo') setPhoto(e.target.files[0]);
-        if (e.target.name === 'audio') setAudio(e.target.files[0]);
+    const handleFormChange = (e) => {
+        const { name, value, type: inputType, checked } = e.target;
+        const val = inputType === 'checkbox' ? checked : value;
+        setReportData(prev => ({ ...prev, [name]: val }));
+
+        // Inline validation if it was already marked as invalid
+        if (invalidFields.has(name)) {
+            validateField(name, val);
+        }
+    };
+
+    const handleBlur = (e) => {
+        validateField(e.target.name, e.target.value);
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        // Final validation
+        let isValid = true;
+        const required = ['child_name', 'village', 'type', 'location', 'description', 'urgency_level'];
+        const newInvalid = new Set();
+        required.forEach(field => {
+            if (!reportData[field] || (typeof reportData[field] === 'string' && !reportData[field].trim())) {
+                newInvalid.add(field);
+                isValid = false;
+            }
+        });
+        setInvalidFields(newInvalid);
+
+        if (!isValid) return;
+
         setSubmitting(true);
         setMsg({ text: '', type: '' });
 
         const formData = new FormData();
-        Object.keys(reportData).forEach(key => formData.append(key, reportData[key]));
+        formData.append('anonymous', reportData.anonymous);
+        formData.append('village', reportData.village);
+        formData.append('abuser_name', reportData.abuser_name);
+        formData.append('child_name', reportData.child_name);
+        formData.append('type', reportData.type);
+        formData.append('location', reportData.location);
+        formData.append('description', reportData.description);
+        formData.append('urgency', reportData.urgency_level);
         formData.append('submitterId', user.id);
-        if (photo) formData.append('photo', photo);
-        if (audio) formData.append('audio', audio);
 
         try {
-            await axios.post(`${API_URL}/reports`, formData, {
-                headers: { 'Content-Type': 'multipart/form-data' }
-            });
+            await axios.post(`${API_URL}/reports`, formData);
             setMsg({ text: 'Signalisation submitted successfully!', type: 'success' });
             setTimeout(() => setView('home'), 2000);
         } catch (err) {
@@ -280,64 +341,130 @@ function SignalisationForm({ user, setView }) {
 
     return (
         <div className="report-view card">
-            <h1>Submit Signalisation</h1>
-            <p className="subtitle">Help us protect children by reporting your concerns.</p>
+            <h1>SignalSafe</h1>
+            <p class="subtitle">Submit a safe and secure incident report</p>
 
-            <form onSubmit={handleSubmit} className="report-form">
+            <form onSubmit={handleSubmit} className="report-form" noValidate>
                 <div className="form-group checkbox-group">
                     <label>
                         <input type="checkbox" name="anonymous" checked={reportData.anonymous} onChange={handleFormChange} />
-                        <span>Anonymous (hide identity in the report)</span>
+                        <span>Report as Anonymous</span>
                     </label>
+                    <div className="helper-text">Your identity will be hidden in the final report.</div>
                 </div>
 
                 <div className="form-row">
                     <div className="form-group">
-                        <label>Child age (approx.)</label>
-                        <input type="text" name="childAge" placeholder="e.g., 8" value={reportData.childAge} onChange={handleFormChange} />
+                        <label>Programme (village)</label>
+                        <input
+                            type="text"
+                            name="village"
+                            className={invalidFields.has('village') ? 'invalid' : ''}
+                            placeholder="Ex: Village SOS Paris"
+                            value={reportData.village}
+                            onChange={handleFormChange}
+                            onBlur={handleBlur}
+                            required
+                        />
+                        {invalidFields.has('village') && <div className="error-message">Please specify the village.</div>}
                     </div>
                     <div className="form-group">
-                        <label>Relationship to child</label>
-                        <input type="text" name="relationship" placeholder="e.g., employee" value={reportData.relationship} onChange={handleFormChange} />
+                        <label>Nom & prenom de l'abuseur</label>
+                        <input
+                            type="text"
+                            name="abuser_name"
+                            placeholder="Name if known"
+                            value={reportData.abuser_name}
+                            onChange={handleFormChange}
+                        />
                     </div>
                 </div>
 
                 <div className="form-row">
                     <div className="form-group">
-                        <label>Type of concern</label>
-                        <select name="type" value={reportData.type} onChange={handleFormChange} required>
-                            <option value="">Select...</option>
-                            <option>Physical violence</option>
-                            <option>Psychological/emotional abuse</option>
-                            <option>Sexual abuse</option>
-                            <option>Neglect</option>
-                            <option>Other</option>
-                        </select>
+                        <label>Nom & prenom de l'enfant</label>
+                        <input
+                            type="text"
+                            name="child_name"
+                            className={invalidFields.has('child_name') ? 'invalid' : ''}
+                            placeholder="Full name of child"
+                            value={reportData.child_name}
+                            onChange={handleFormChange}
+                            onBlur={handleBlur}
+                            required
+                        />
+                        {invalidFields.has('child_name') && <div className="error-message">Child name is required.</div>}
                     </div>
                     <div className="form-group">
                         <label>Location (city/area)</label>
-                        <input type="text" name="location" placeholder="City" value={reportData.location} onChange={handleFormChange} required />
+                        <input
+                            type="text"
+                            name="location"
+                            className={invalidFields.has('location') ? 'invalid' : ''}
+                            placeholder="City"
+                            value={reportData.location}
+                            onChange={handleFormChange}
+                            onBlur={handleBlur}
+                            required
+                        />
+                        {invalidFields.has('location') && <div className="error-message">Location is required.</div>}
+                    </div>
+                </div>
+
+                <div className="form-row">
+                    <div className="form-group">
+                        <label>Type d'incident</label>
+                        <select
+                            name="type"
+                            className={invalidFields.has('type') ? 'invalid' : ''}
+                            value={reportData.type}
+                            onChange={handleFormChange}
+                            onBlur={handleBlur}
+                            required
+                        >
+                            <option value="">Select...</option>
+                            <option>Santé</option>
+                            <option>Comportement</option>
+                            <option>Violence</option>
+                            <option>Autre</option>
+                        </select>
+                        {invalidFields.has('type') && <div className="error-message">Please select a type.</div>}
+                    </div>
+                    <div className="form-group">
+                        <label>Niveau d'urgence</label>
+                        <select
+                            name="urgency_level"
+                            className={invalidFields.has('urgency_level') ? 'invalid' : ''}
+                            value={reportData.urgency_level}
+                            onChange={handleFormChange}
+                            onBlur={handleBlur}
+                            required
+                        >
+                            <option value="">Select...</option>
+                            <option>Faible</option>
+                            <option>Moyenne</option>
+                            <option>Critique</option>
+                        </select>
+                        {invalidFields.has('urgency_level') && <div className="error-message">Urgency level required.</div>}
                     </div>
                 </div>
 
                 <div className="form-group">
-                    <label>Description</label>
-                    <textarea name="description" placeholder="Write facts you know..." value={reportData.description} onChange={handleFormChange} required></textarea>
-                </div>
-
-                <div className="form-row">
-                    <div className="form-group">
-                        <label>Attach Picture</label>
-                        <input type="file" name="photo" accept="image/*" onChange={handleFileChange} />
-                    </div>
-                    <div className="form-group">
-                        <label>Voice Message (Upload)</label>
-                        <input type="file" name="audio" accept="audio/*" onChange={handleFileChange} />
-                    </div>
+                    <label>Description / Champ libre</label>
+                    <textarea
+                        name="description"
+                        className={invalidFields.has('description') ? 'invalid' : ''}
+                        placeholder="Detailed facts..."
+                        value={reportData.description}
+                        onChange={handleFormChange}
+                        onBlur={handleBlur}
+                        required
+                    ></textarea>
+                    {invalidFields.has('description') && <div className="error-message">Please provide a description.</div>}
                 </div>
 
                 <button type="submit" disabled={submitting}>
-                    {submitting ? 'Submitting...' : '✅ Submit Report'}
+                    {submitting ? 'Submitting...' : '🚀 Submit Report'}
                 </button>
             </form>
 

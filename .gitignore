@@ -13,3 +13,6 @@ client/dist/
 # OS files
 .DS_Store
 Thumbs.db
+
+# Uploads
+server/uploads/

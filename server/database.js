@@ -35,6 +35,9 @@ const db = new sqlite3.Database(dbPath, (err) => {
         status TEXT DEFAULT 'SUBMITTED',
         anonymous INTEGER DEFAULT 0,
         submitter_id INTEGER,
+        village TEXT,
+        abuser_name TEXT,
+        child_name TEXT,
         child_age TEXT,
         relationship TEXT,
         location TEXT,
@@ -55,6 +58,11 @@ const db = new sqlite3.Database(dbPath, (err) => {
     `, (err) => {
       if (err) {
         console.error('Error creating table signalisation', err.message);
+      } else {
+        // Migration: Add columns if they don't exist
+        db.run(`ALTER TABLE signalisation ADD COLUMN village TEXT`, (err) => { });
+        db.run(`ALTER TABLE signalisation ADD COLUMN abuser_name TEXT`, (err) => { });
+        db.run(`ALTER TABLE signalisation ADD COLUMN child_name TEXT`, (err) => { });
       }
     });
   }
