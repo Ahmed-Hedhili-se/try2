@@ -255,6 +255,11 @@
                     <h4>Enfant</h4>
                     <p id="mChild">-</p>
                 </div>
+                <!-- Psychologue Attribution (Visible to Governance) -->
+                <div id="modalPsySection" class="modal-item" style="display: none;">
+                    <h4>Psychologue (Analysé par)</h4>
+                    <p id="mPsy" style="color: var(--primary); font-weight: 600;">-</p>
+                </div>
             </div>
             <div class="modal-item" style="margin-top: 1.5rem;">
                 <h4>Description</h4>
@@ -335,6 +340,7 @@
 
         function renderReports(reports) {
             const user = JSON.parse(localStorage.getItem('user'));
+            const isAdmin = user && (user.role === 'directeur' || user.role === 'bureau national');
 
             reportsGrid.innerHTML = reports.map(r => `
                 <div class="report-card">
@@ -347,6 +353,12 @@
                     <div style="margin-bottom: 1rem; font-size: 0.8rem; color: #818cf8; font-weight: 600;">
                         Urgency: ${r.urgency || r.urgency_level || 'N/A'}
                     </div>
+                    
+                    ${(isAdmin && r.psychologue) ? `
+                    <div style="margin-bottom: 1rem; font-size: 0.8rem; color: var(--primary); font-weight: 600;">
+                        👤 Analysé par: ${r.psychologue}
+                    </div>` : ''}
+
                     <div style="display: flex; gap: 0.5rem;">
                         <button class="details-btn" onclick='showDetails(${JSON.stringify(r).replace(/'/g, "&apos;")})'>View Details</button>
                     </div>
@@ -371,6 +383,18 @@
             // RBAC Actions visibility
             const user = JSON.parse(localStorage.getItem('user'));
             const psyActions = document.getElementById('psyActions');
+            const isAdmin = user && (user.role === 'directeur' || user.role === 'bureau national');
+
+            // Psychologue display for Admin/Governance
+            const modalPsySection = document.getElementById('modalPsySection');
+            const mPsy = document.getElementById('mPsy');
+            if (isAdmin && r.psychologue) {
+                mPsy.textContent = r.psychologue;
+                modalPsySection.style.display = 'block';
+            } else {
+                modalPsySection.style.display = 'none';
+            }
+
             if (user.role === 'psychologues') {
                 psyActions.style.display = 'block';
                 // Auto-update to "en cours de traitement" if new
@@ -394,7 +418,10 @@
                         'x-user-role': user.role,
                         'x-user-id': user.id
                     },
-                    body: JSON.stringify({ status: newStatus })
+                    body: JSON.stringify({
+                        status: newStatus,
+                        psychologue: user.fullname
+                    })
                 });
 
                 if (!response.ok) throw new Error('Status update failed');

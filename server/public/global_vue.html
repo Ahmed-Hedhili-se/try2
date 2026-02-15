@@ -188,7 +188,7 @@
             </div>
         </nav>
 
-        <h1>Vue Globale des Signalements</h1>
+        <h1 id="page-title">Vue Globale des Signalements</h1>
         <div id="reportsGrid" class="reports-grid">
             <p>Chargement des signalements...</p>
         </div>
@@ -238,6 +238,7 @@
 
         async function fetchGlobalReports() {
             const user = JSON.parse(localStorage.getItem('user'));
+            const titleEl = document.getElementById('page-title');
             try {
                 const res = await fetch('/api/global/signalisations', {
                     headers: {
@@ -246,8 +247,16 @@
                     }
                 });
                 if (!res.ok) throw new Error('Failed to fetch data');
-                const reports = await res.json();
-                renderView(reports);
+                const data = await res.json();
+
+                // Dynamic Title Logic
+                if (data.role === 'directeur') {
+                    titleEl.textContent = `Vue Globale - Village SOS ${data.village}`;
+                } else if (data.role === 'bureau national') {
+                    titleEl.textContent = "Vue Globale Nationale";
+                }
+
+                renderView(data.reports);
             } catch (err) {
                 grid.innerHTML = `<p style="color: #ef4444">${err.message}</p>`;
             }
