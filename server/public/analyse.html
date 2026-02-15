@@ -361,6 +361,7 @@
 
                     <div style="display: flex; gap: 0.5rem;">
                         <button class="details-btn" onclick='showDetails(${JSON.stringify(r).replace(/'/g, "&apos;")})'>View Details</button>
+                        ${isAdmin ? `<button class="details-btn" style="background: #ef4444;" onclick="deleteReport(${r.id})">Supprimer</button>` : ''}
                     </div>
                 </div>
             `).join('');
@@ -443,6 +444,25 @@
             } catch (err) {
                 console.error(err);
                 if (!isAuto) alert('Error updating status');
+            }
+        }
+
+        async function deleteReport(id) {
+            if (!confirm('Êtes-vous sûr de vouloir supprimer ce signalement ?')) return;
+            const user = JSON.parse(localStorage.getItem('user'));
+            try {
+                const response = await fetch(`/api/reports/${id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'x-user-role': user.role,
+                        'x-user-id': user.id
+                    }
+                });
+                if (!response.ok) throw new Error('Suppression échouée');
+                alert('Signalement supprimé');
+                fetchReports();
+            } catch (err) {
+                alert(err.message);
             }
         }
 

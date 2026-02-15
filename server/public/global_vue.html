@@ -281,9 +281,31 @@
                         </span>
                     </div>
                     
-                    <button class="details-btn" onclick='showDetails(${JSON.stringify(r).replace(/'/g, "&apos;")})'>Voir Détails</button>
+                    <div style="display: flex; gap: 0.5rem; margin-top: 1.5rem;">
+                        <button class="details-btn" style="margin-top:0;" onclick='showDetails(${JSON.stringify(r).replace(/'/g, "&apos;")})'>Voir Détails</button>
+                        <button class="details-btn" style="margin-top:0; background: #ef4444;" onclick="deleteReport(${r.id})">Supprimer</button>
+                    </div>
                 </div>
             `).join('');
+        }
+
+        async function deleteReport(id) {
+            if (!confirm('Êtes-vous sûr de vouloir supprimer ce signalement ?')) return;
+            const user = JSON.parse(localStorage.getItem('user'));
+            try {
+                const response = await fetch(`/api/reports/${id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'x-user-role': user.role,
+                        'x-user-id': user.id
+                    }
+                });
+                if (!response.ok) throw new Error('Suppression échouée');
+                alert('Signalement supprimé');
+                fetchGlobalReports();
+            } catch (err) {
+                alert(err.message);
+            }
         }
 
         function showDetails(r) {
