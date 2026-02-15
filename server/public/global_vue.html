@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vue Globale - Level 3 Governance</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #8b5cf6;
+            --primary-hover: #7c3aed;
+            --bg: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --text: #f8fafc;
+            --text-muted: #94a3b8;
+            --glass-border: rgba(255, 255, 255, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: radial-gradient(circle at top right, #1e1b4b, #0f172a);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 2rem;
+            border-bottom: 1px solid var(--glass-border);
+            margin-bottom: 3rem;
+        }
+
+        .nav-brand {
+            font-size: 1.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #8b5cf6 0%, #d8b4fe 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            margin-left: 1.5rem;
+            font-size: 0.9rem;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: var(--text);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .reports-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .report-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 1.25rem;
+            padding: 1.5rem;
+            transition: transform 0.3s, border-color 0.3s;
+        }
+
+        .report-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary);
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 2rem;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-bottom: 1rem;
+            background: rgba(139, 92, 246, 0.1);
+            color: #c084fc;
+        }
+
+        .assignment-info {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--glass-border);
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .details-btn {
+            width: 100%;
+            padding: 0.75rem;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 0.75rem;
+            margin-top: 1.5rem;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+
+        .details-btn:hover {
+            background: var(--primary-hover);
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal {
+            background: #1e293b;
+            width: 90%;
+            max-width: 600px;
+            padding: 2.5rem;
+            border-radius: 2rem;
+            border: 1px solid var(--glass-border);
+        }
+
+        .modal-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+            margin: 1.5rem 0;
+        }
+
+        .modal-item h4 {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            margin-bottom: 0.25rem;
+        }
+
+        .psy-section {
+            background: rgba(139, 92, 246, 0.05);
+            padding: 1.5rem;
+            border-radius: 1rem;
+            border: 1px dashed var(--primary);
+            margin-top: 2rem;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <nav>
+            <div class="nav-brand">SignalSafe Governance</div>
+            <div class="nav-links">
+                <a href="/dashboard.html">Dashboard</a>
+                <a href="/analyse.html">Analyse</a>
+                <a href="/dossiers.html">Dossiers</a>
+                <a href="#" onclick="logout()">Logout</a>
+            </div>
+        </nav>
+
+        <h1>Vue Globale des Signalements</h1>
+        <div id="reportsGrid" class="reports-grid">
+            <p>Chargement des signalements...</p>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div id="modalOverlay" class="modal-overlay">
+        <div class="modal">
+            <h2 id="mTitle">Détails du Signalement</h2>
+            <div class="modal-grid">
+                <div class="modal-item">
+                    <h4>ID</h4>
+                    <p id="mId">-</p>
+                </div>
+                <div class="modal-item">
+                    <h4>Type</h4>
+                    <p id="mType">-</p>
+                </div>
+                <div class="modal-item">
+                    <h4>Village</h4>
+                    <p id="mVillage">-</p>
+                </div>
+                <div class="modal-item">
+                    <h4>Statut</h4>
+                    <p id="mStatus">-</p>
+                </div>
+            </div>
+            <div class="modal-item">
+                <h4>Description</h4>
+                <p id="mDesc" style="margin-top:0.5rem; font-size: 0.95rem; line-height: 1.5;">-</p>
+            </div>
+
+            <div class="psy-section">
+                <h4 style="color: var(--primary); font-size: 0.8rem; text-transform: uppercase; margin-bottom: 0.5rem;">
+                    Attribution Psychologue</h4>
+                <p id="mPsy" style="font-weight: 600; font-size: 1.1rem;">-</p>
+            </div>
+
+            <button onclick="closeModal()" class="details-btn"
+                style="background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border);">Fermer</button>
+        </div>
+    </div>
+
+    <script>
+        const grid = document.getElementById('reportsGrid');
+        const modal = document.getElementById('modalOverlay');
+
+        async function fetchGlobalReports() {
+            const user = JSON.parse(localStorage.getItem('user'));
+            try {
+                const res = await fetch('/api/global/signalisations', {
+                    headers: {
+                        'x-user-role': user.role,
+                        'x-user-id': user.id
+                    }
+                });
+                if (!res.ok) throw new Error('Failed to fetch data');
+                const reports = await res.json();
+                renderView(reports);
+            } catch (err) {
+                grid.innerHTML = `<p style="color: #ef4444">${err.message}</p>`;
+            }
+        }
+
+        function renderView(reports) {
+            if (reports.length === 0) {
+                grid.innerHTML = '<p>Aucun signalement trouvé.</p>';
+                return;
+            }
+
+            grid.innerHTML = reports.map(r => `
+                <div class="report-card">
+                    <span class="status-badge">${r.status}</span>
+                    <h3 style="margin-bottom: 0.5rem;">${r.type}</h3>
+                    <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem;">${r.village}</p>
+                    
+                    <div class="assignment-info">
+                        <span>Analysé:</span>
+                        <span style="color: ${r.psychologue_id ? '#22c55e' : '#eab308'}; font-weight: bold;">
+                            ${r.psychologue_id ? 'OUI' : 'NON'}
+                        </span>
+                    </div>
+                    
+                    <button class="details-btn" onclick='showDetails(${JSON.stringify(r).replace(/'/g, "&apos;")})'>Voir Détails</button>
+                </div>
+            `).join('');
+        }
+
+        function showDetails(r) {
+            document.getElementById('mId').textContent = r.report_id || r.id;
+            document.getElementById('mType').textContent = r.type;
+            document.getElementById('mVillage').textContent = r.village;
+            document.getElementById('mStatus').textContent = r.status;
+            document.getElementById('mDesc').textContent = r.description;
+            document.getElementById('mPsy').textContent = r.psychologue_nom || 'Non assigné';
+            modal.style.display = 'flex';
+        }
+
+        function closeModal() { modal.style.display = 'none'; }
+        function logout() { localStorage.clear(); window.location.href = '/'; }
+
+        // Start
+        fetchGlobalReports();
+    </script>
+</body>
+
+</html>

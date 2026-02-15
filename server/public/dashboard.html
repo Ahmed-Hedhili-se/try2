@@ -115,6 +115,9 @@
                     style="display: none; color: var(--text-muted); text-decoration: none; font-size: 0.9rem; padding: 0.5rem 1rem; border-radius: 0.5rem; transition: all 0.3s;">Analyse</a>
                 <a href="/dossiers.html" id="nav-dossiers"
                     style="display: none; color: var(--text-muted); text-decoration: none; font-size: 0.9rem; padding: 0.5rem 1rem; border-radius: 0.5rem; transition: all 0.3s;">Dossiers</a>
+                <a href="/global_vue.html" id="nav-global"
+                    style="display: none; color: var(--text-muted); text-decoration: none; font-size: 0.9rem; padding: 0.5rem 1rem; border-radius: 0.5rem; transition: all 0.3s;">🌍
+                    Global Vue</a>
             </div>
         </nav>
 
@@ -128,6 +131,8 @@
                         Reports</a>
                     <a href="/dossiers.html" id="btn-dossiers" class="btn btn-analyse"
                         style="display: none; background: #6366f1;">📁 Dossiers et Rapports</a>
+                    <a href="/global_vue.html" id="btn-global" class="btn btn-analyse"
+                        style="display: none; background: #8b5cf6;">🌍 Global Vue (Level 3)</a>
                 </div>
 
                 <div
@@ -171,6 +176,12 @@
                     document.getElementById('btn-analyse').style.display = 'flex';
                     document.getElementById('nav-dossiers').style.display = 'block';
                     document.getElementById('btn-dossiers').style.display = 'flex';
+                }
+
+                // Global Vue for Level 3 Governance
+                if (user.role === 'directeur' || user.role === 'bureau national') {
+                    document.getElementById('nav-global').style.display = 'block';
+                    document.getElementById('btn-global').style.display = 'flex';
                 }
                 document.getElementById('main-nav').style.display = 'flex';
 

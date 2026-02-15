@@ -151,6 +151,7 @@ router.get('/signalisations', (req, res) => {
 // UPDATE signalisation status - Protected by RBAC (Psychologues only)
 router.put('/signalisations/:id/status', (req, res) => {
     const userRole = req.headers['x-user-role'];
+    const userId = req.headers['x-user-id'];
     const { id } = req.params;
     const { status } = req.body;
 
@@ -162,8 +163,8 @@ router.put('/signalisations/:id/status', (req, res) => {
         return res.status(400).json({ message: 'Status is required' });
     }
 
-    const sql = `UPDATE signalisation SET status = ? WHERE id = ?`;
-    db.run(sql, [status, id], function (err) {
+    const sql = `UPDATE signalisation SET status = ?, psychologue_id = ? WHERE id = ?`;
+    db.run(sql, [status, userId, id], function (err) {
         if (err) return res.status(500).json({ message: err.message });
         if (this.changes === 0) return res.status(404).json({ message: 'Report not found' });
         res.status(200).json({ message: 'Status updated successfully' });
@@ -233,6 +234,42 @@ router.post('/signalisations/:id/rapports', reportUploadFields, (req, res) => {
         if (err) return res.status(500).json({ message: err.message });
         if (this.changes === 0) return res.status(404).json({ message: 'Report not found' });
         res.status(200).json({ message: 'Documents uploaded successfully' });
+    });
+});
+
+// GET Global View for signalisations (Admin/Level 3 Governance)
+router.get('/global/signalisations', (req, res) => {
+    const userRole = req.headers['x-user-role'];
+    const userId = req.headers['x-user-id'];
+
+    if (userRole !== 'directeur' && userRole !== 'bureau national') {
+        return res.status(403).json({ message: 'Accès non autorisé' });
+    }
+
+    // Get the admin's village to filter data for 'directeur'
+    const userSql = `SELECT village FROM users WHERE id_user = ?`;
+    db.get(userSql, [userId], (err, user) => {
+        if (err) return res.status(500).json({ message: err.message });
+        if (!user) return res.status(404).json({ message: 'User not found' });
+
+        let sql = `
+            SELECT s.*, u.full_name AS psychologue_nom 
+            FROM signalisation s 
+            LEFT JOIN users u ON s.psychologue_id = u.id_user
+        `;
+        let params = [];
+
+        if (userRole === 'directeur') {
+            sql += ` WHERE s.village = ?`;
+            params.push(user.village);
+        }
+
+        sql += ` ORDER BY s.id DESC`;
+
+        db.all(sql, params, (err, rows) => {
+            if (err) return res.status(500).json({ message: err.message });
+            res.status(200).json(rows);
+        });
     });
 });
 
