@@ -205,8 +205,9 @@
         <nav class="navbar">
             <div class="nav-brand">SignalSafe</div>
             <div class="nav-links">
-                <a href="http://localhost:5173/">Dashboard</a>
+                <a href="/dashboard.html">Dashboard</a>
                 <a href="/analyse.html" style="color: var(--primary)">Analyse</a>
+                <a href="/dossiers.html">Dossiers</a>
             </div>
         </nav>
 
@@ -259,6 +260,23 @@
                 <h4>Description</h4>
                 <p id="mDesc" style="white-space: pre-wrap;">-</p>
             </div>
+
+            <!-- Psychologue Actions -->
+            <div id="psyActions"
+                style="display: none; margin-top: 2rem; gap: 1rem; border-top: 1px solid var(--glass-border); padding-top: 1.5rem;">
+                <h4
+                    style="width:100%; font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; margin: 1rem 0 0.5rem;">
+                    Actions Classification</h4>
+                <div style="display: flex; gap: 1rem; width: 100%;">
+                    <button class="details-btn" style="background: #10b981;" onclick="updateStatus('cloturé')">Finaliser
+                        (Cloturé)</button>
+                    <button class="details-btn" style="background: #3b82f6;" onclick="updateStatus('cloturé')">Prise en
+                        charge</button>
+                    <button class="details-btn" style="background: #ef4444;"
+                        onclick="updateStatus('fausse signalement')">Rejeter</button>
+                </div>
+            </div>
+
             <button class="close-btn" onclick="closeModal()">Close Details</button>
         </div>
     </div>
@@ -299,7 +317,7 @@
             }
 
             try {
-                const response = await fetch('/api/signalisations', {
+                const response = await fetch(`/api/signalisations?userId=${user.id}`, {
                     headers: {
                         'x-user-role': user.role
                     }
@@ -316,10 +334,8 @@
         }
 
         function renderReports(reports) {
-            if (reports.length === 0) {
-                reportsGrid.innerHTML = '<p>No reports found.</p>';
-                return;
-            }
+            const user = JSON.parse(localStorage.getItem('user'));
+            const isAdmin = user && (user.role === 'directeur' || user.role === 'bureau national');
 
             reportsGrid.innerHTML = reports.map(r => `
                 <div class="report-card">
@@ -332,12 +348,36 @@
                     <div style="margin-bottom: 1rem; font-size: 0.8rem; color: #818cf8; font-weight: 600;">
                         Urgency: ${r.urgency || r.urgency_level || 'N/A'}
                     </div>
-                    <button class="details-btn" onclick='showDetails(${JSON.stringify(r).replace(/'/g, "&apos;")})'>View Details</button>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <button class="details-btn" onclick='showDetails(${JSON.stringify(r).replace(/'/g, "&apos;")})'>View Details</button>
+                        ${isAdmin ? `<button class="details-btn" style="background: #ef4444; width: auto; padding: 0.6rem 1rem;" onclick="deleteReport(${r.id})">Supprimer</button>` : ''}
+                    </div>
                 </div>
             `).join('');
         }
 
+        async function deleteReport(id) {
+            if (!confirm('Are you sure you want to delete this report?')) return;
+            const user = JSON.parse(localStorage.getItem('user'));
+            try {
+                const response = await fetch(`/api/reports/${id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'x-user-role': user.role
+                    }
+                });
+                if (!response.ok) throw new Error('Deletion failed');
+                alert('Signalement supprimé');
+                fetchReports();
+            } catch (err) {
+                alert('Error deleting report');
+            }
+        }
+
+        let currentReportId = null;
+
         function showDetails(r) {
+            currentReportId = r.id;
             document.getElementById('mId').textContent = r.report_id || r.id;
             document.getElementById('mType').textContent = r.type;
             document.getElementById('mUrgency').textContent = r.urgency || r.urgency_level || 'N/A';
@@ -348,7 +388,54 @@
             document.getElementById('mChild').textContent = r.child_name || 'N/A';
             document.getElementById('mDesc').textContent = r.description;
 
+            // RBAC Actions visibility
+            const user = JSON.parse(localStorage.getItem('user'));
+            const psyActions = document.getElementById('psyActions');
+            if (user.role === 'psychologues') {
+                psyActions.style.display = 'block';
+                // Auto-update to "en cours de traitement" if new
+                if (r.status === 'SUBMITTED' || r.status === 'en attente') {
+                    updateStatus('en cours de traitement', true);
+                }
+            } else {
+                psyActions.style.display = 'none';
+            }
+
             modalOverlay.style.display = 'flex';
+        }
+
+        async function updateStatus(newStatus, isAuto = false) {
+            const user = JSON.parse(localStorage.getItem('user'));
+            try {
+                const response = await fetch(`/api/signalisations/${currentReportId}/status`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'x-user-role': user.role
+                    },
+                    body: JSON.stringify({ status: newStatus })
+                });
+
+                if (!response.ok) throw new Error('Status update failed');
+
+                if (!isAuto) {
+                    alert(`Statut mis à jour: ${newStatus}`);
+                    closeModal();
+
+                    // Redirect for specific statuses if the user is a psychologue
+                    if (user.role === 'psychologues' && (newStatus === 'cloturé' || newStatus === 'prise en charge')) {
+                        window.location.href = `/rapports.html?id=${currentReportId}`;
+                        return;
+                    }
+
+                    fetchReports();
+                } else {
+                    document.getElementById('mStatus').textContent = newStatus;
+                }
+            } catch (err) {
+                console.error(err);
+                if (!isAuto) alert('Error updating status');
+            }
         }
 
         function closeModal() {

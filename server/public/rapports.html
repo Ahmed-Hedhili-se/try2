@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SignalSafe - Rédaction de Rapports</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --bg: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --text: #f8fafc;
+            --text-muted: #94a3b8;
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --success: #10b981;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: radial-gradient(circle at top right, #1e1b4b, #0f172a);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--glass-border);
+            margin-bottom: 2rem;
+        }
+
+        .nav-brand {
+            font-size: 1.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .report-summary {
+            background: var(--card-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .report-summary h2 {
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            color: var(--primary);
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            font-size: 0.9rem;
+        }
+
+        .summary-item label {
+            color: var(--text-muted);
+            display: block;
+            margin-bottom: 0.25rem;
+        }
+
+        .upload-form {
+            background: var(--card-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 1rem;
+            padding: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .form-group input[type="file"] {
+            width: 100%;
+            padding: 0.5rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px dashed var(--glass-border);
+            border-radius: 0.5rem;
+            color: var(--text-muted);
+            cursor: pointer;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 1rem;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 0.75rem;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 1rem;
+        }
+
+        .submit-btn:hover {
+            background: var(--primary-hover);
+            transform: translateY(-2px);
+        }
+
+        .submit-btn:disabled {
+            background: #475569;
+            cursor: not-allowed;
+        }
+
+        #statusMsg {
+            margin-top: 1rem;
+            text-align: center;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            display: none;
+        }
+
+        .success {
+            background: rgba(16, 185, 129, 0.2);
+            color: #34d399;
+        }
+
+        .error {
+            background: rgba(239, 68, 68, 0.2);
+            color: #f87171;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+
+        .back-link:hover {
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <nav class="navbar">
+            <div class="nav-brand">SignalSafe</div>
+            <a href="/dossiers.html" class="back-link">← Retour aux dossiers</a>
+        </nav>
+
+        <h1>Rédaction de Rapports</h1>
+        <p style="color: var(--text-muted); margin-bottom: 2rem;">Veuillez télécharger les 6 documents obligatoires pour
+            ce dossier.</p>
+
+        <div class="report-summary" id="reportSummary">
+            <p>Chargement du dossier...</p>
+        </div>
+
+        <form class="upload-form" id="uploadForm">
+            <div class="form-group">
+                <label>1. Fiche initial de signalement + Rapport DPE</label>
+                <input type="file" name="file_fiche_initial" accept=".pdf">
+            </div>
+            <div class="form-group">
+                <label>2. Evaluation complète</label>
+                <input type="file" name="file_evaluation" accept=".pdf">
+            </div>
+            <div class="form-group">
+                <label>3. Plan d'action</label>
+                <input type="file" name="file_plan_action" accept=".pdf">
+            </div>
+            <div class="form-group">
+                <label>4. Rapport de suivi</label>
+                <input type="file" name="file_rapport_suivi" accept=".pdf">
+            </div>
+            <div class="form-group">
+                <label>5. Rapport final</label>
+                <input type="file" name="file_rapport_final" accept=".pdf">
+            </div>
+            <div class="form-group">
+                <label>6. Avis de clôture</label>
+                <input type="file" name="file_avis_cloture" accept=".pdf">
+            </div>
+
+            <button type="submit" class="submit-btn" id="submitBtn">Enregistrer les documents</button>
+            <div id="statusMsg"></div>
+        </form>
+    </div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const reportId = urlParams.get('id');
+        const summaryEl = document.getElementById('reportSummary');
+        const uploadForm = document.getElementById('uploadForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const statusMsg = document.getElementById('statusMsg');
+
+        if (!reportId) {
+            window.location.href = '/dossiers.html';
+        }
+
+        async function fetchDetails() {
+            const userData = localStorage.getItem('user');
+            if (!userData) { window.location.href = '/'; return; }
+            const user = JSON.parse(userData);
+
+            try {
+                // We use the existing all reports fetch logic but find our ID
+                const response = await fetch(`/api/signalisations?userId=${user.id}`, {
+                    headers: { 'x-user-role': user.role }
+                });
+                const reports = await response.json();
+                const report = reports.find(r => r.id == reportId);
+
+                if (!report) {
+                    summaryEl.innerHTML = '<p class="error">Dossier introuvable.</p>';
+                    return;
+                }
+
+                summaryEl.innerHTML = `
+                    <h2>Dossier #${report.id} - ${report.type}</h2>
+                    <div class="summary-grid">
+                        <div class="summary-item"><label>Nom de l'enfant</label> ${report.child_name || 'N/A'}</div>
+                        <div class="summary-item"><label>Accusé</label> ${report.abuser_name || 'N/A'}</div>
+                        <div class="summary-item"><label>Lieu</label> ${report.location}</div>
+                        <div class="summary-item"><label>Status</label> ${report.status}</div>
+                    </div>
+                `;
+            } catch (err) {
+                summaryEl.innerHTML = '<p class="error">Erreur lors du chargement.</p>';
+            }
+        }
+
+        uploadForm.onsubmit = async (e) => {
+            e.preventDefault();
+            const userData = localStorage.getItem('user');
+            const user = JSON.parse(userData);
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Téléchargement en cours...';
+            statusMsg.style.display = 'none';
+
+            const formData = new FormData(uploadForm);
+
+            try {
+                const response = await fetch(`/api/signalisations/${reportId}/rapports`, {
+                    method: 'POST',
+                    headers: {
+                        'x-user-role': user.role
+                    },
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    statusMsg.textContent = '🚀 Documents enregistrés avec succès!';
+                    statusMsg.className = 'success';
+                    statusMsg.style.display = 'block';
+                } else {
+                    throw new Error(result.message || 'Échec de l\'envoi');
+                }
+            } catch (err) {
+                statusMsg.textContent = '❌ Erreur: ' + err.message;
+                statusMsg.className = 'error';
+                statusMsg.style.display = 'block';
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Enregistrer les documents';
+            }
+        };
+
+        fetchDetails();
+    </script>
+</body>
+
+</html>

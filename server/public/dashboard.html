@@ -113,6 +113,8 @@
                     style="color: white; text-decoration: none; font-size: 0.9rem; padding: 0.5rem 1rem; border-radius: 0.5rem; background: rgba(255,255,255,0.05);">Dashboard</a>
                 <a href="/analyse.html" id="nav-analyse"
                     style="display: none; color: var(--text-muted); text-decoration: none; font-size: 0.9rem; padding: 0.5rem 1rem; border-radius: 0.5rem; transition: all 0.3s;">Analyse</a>
+                <a href="/dossiers.html" id="nav-dossiers"
+                    style="display: none; color: var(--text-muted); text-decoration: none; font-size: 0.9rem; padding: 0.5rem 1rem; border-radius: 0.5rem; transition: all 0.3s;">Dossiers</a>
             </div>
         </nav>
 
@@ -124,6 +126,16 @@
                     <a href="/" class="btn btn-primary">📝 New Signalisation</a>
                     <a href="/analyse.html" id="btn-analyse" class="btn btn-analyse" style="display: none;">📊 Analyse
                         Reports</a>
+                    <a href="/dossiers.html" id="btn-dossiers" class="btn btn-analyse"
+                        style="display: none; background: #6366f1;">📁 Dossiers et Rapports</a>
+                </div>
+
+                <div
+                    style="margin-top: 2rem; text-align: left; border-top: 1px solid var(--glass-border); padding-top: 1.5rem;">
+                    <h2 style="font-size: 1rem; margin-bottom: 1rem; color: var(--primary);">My Signalisation</h2>
+                    <div id="myReportsList">
+                        <p style="color: var(--text-muted); font-size: 0.9rem;">Loading reports...</p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -149,16 +161,47 @@
             const userData = localStorage.getItem('user');
             if (userData) {
                 const user = JSON.parse(userData);
-                document.getElementById('welcomeTitle').textContent = `Hello, ${user.fullname}`;
-                document.getElementById('userRoleDetail').textContent = `Role: ${user.role} | City: ${user.ville}`;
+                document.getElementById('welcomeMsg').textContent = `Hello, ${user.fullname}`;
+                document.getElementById('userRoleDetail').textContent = `Role: ${user.role} | Village: ${user.village}`;
 
                 // RBAC Logic
                 const forbiddenRoles = ['mere', 'tante', 'educatrice', 'responsable sociale'];
                 if (!forbiddenRoles.includes(user.role)) {
                     document.getElementById('nav-analyse').style.display = 'block';
                     document.getElementById('btn-analyse').style.display = 'flex';
+                    document.getElementById('nav-dossiers').style.display = 'block';
+                    document.getElementById('btn-dossiers').style.display = 'flex';
                 }
                 document.getElementById('main-nav').style.display = 'flex';
+
+                // Load reports for "My Signalisation"
+                fetch(`/api/reports/my?userId=${user.id}`)
+                    .then(res => res.json())
+                    .then(reports => {
+                        const list = document.getElementById('myReportsList');
+                        if (reports.length === 0) {
+                            list.innerHTML = '<p style="color: var(--text-muted); font-size: 0.9rem;">No reports found.</p>';
+                            return;
+                        }
+                        list.innerHTML = reports.map(r => {
+                            let badgeColor = '#94a3b8'; // Gray
+                            if (r.status === 'en cours de traitement') badgeColor = '#eab308'; // Yellow
+                            if (r.status === 'cloturé') badgeColor = '#22c55e'; // Green
+                            if (r.status === 'fausse signalement') badgeColor = '#ef4444'; // Red
+
+                            return `
+                                <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); border-radius: 0.75rem; padding: 1rem; margin-bottom: 0.75rem; display: flex; justify-content: space-between; align-items: center;">
+                                    <div style="text-align: left;">
+                                        <div style="font-weight: 600; font-size: 0.9rem;">${r.type}</div>
+                                        <div style="color: var(--text-muted); font-size: 0.8rem;">Village: ${r.village} | ${new Date(r.created_at).toLocaleDateString()}</div>
+                                    </div>
+                                    <span style="background: ${badgeColor}20; color: ${badgeColor}; font-size: 10px; padding: 4px 8px; border-radius: 10px; font-weight: bold; text-transform: uppercase;">
+                                        ${r.status}
+                                    </span>
+                                </div>
+                            `;
+                        }).join('');
+                    });
             } else {
                 // If no user, redirect to login (root)
                 window.location.href = '/';

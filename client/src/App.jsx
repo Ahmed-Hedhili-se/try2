@@ -15,7 +15,7 @@ function App() {
         email: '',
         password: '',
         role: 'mere',
-        ville: ''
+        village: ''
     });
     const [message, setMessage] = useState({ text: '', type: '' });
 
@@ -147,15 +147,14 @@ function App() {
 
                     {!isLogin && (
                         <div className="form-group">
-                            <label>City (Ville)</label>
-                            <input
-                                type="text"
-                                name="ville"
-                                placeholder="Paris"
-                                value={formData.ville}
-                                onChange={handleChange}
-                                required
-                            />
+                            <label>Village SOS</label>
+                            <select name="village" value={formData.village} onChange={handleChange} required>
+                                <option value="">Sélectionnez un village</option>
+                                <option value="Gammarth">Gammarth</option>
+                                <option value="Akouda">Akouda</option>
+                                <option value="Siliana">Siliana</option>
+                                <option value="Mahres">Mahres</option>
+                            </select>
                         </div>
                     )}
 
@@ -200,7 +199,7 @@ function Dashboard({ user, setView }) {
         <div className="dashboard-view">
             <div className="welcome-header">
                 <h1>Hello, {user.fullname}</h1>
-                <p>Role: <span className="badge">{user.role}</span> | City: {user.ville}</p>
+                <p>Role: <span className="badge">{user.role}</span> | Village: {user.village}</p>
             </div>
 
             <div className="stats-grid">
@@ -232,7 +231,36 @@ function Dashboard({ user, setView }) {
                             <div key={r.id} className="report-item">
                                 <div className="report-header">
                                     <span className={`status-pill ${r.status.toLowerCase()}`}>{r.status}</span>
-                                    <span className="date">{new Date(r.created_at).toLocaleDateString()}</span>
+                                    <p>Village: {r.village}</p>
+                                    <p>Submitted: {new Date(r.created_at).toLocaleDateString()}</p>
+                                    {(user.role === 'directeur' || user.role === 'bureau national') && (
+                                        <button
+                                            className="delete-report-btn"
+                                            onClick={async () => {
+                                                if (window.confirm('Are you sure you want to delete this report?')) {
+                                                    try {
+                                                        await axios.delete(`${API_URL}/reports/${r.id}`, {
+                                                            headers: { 'x-user-role': user.role }
+                                                        });
+                                                        setReports(reports.filter(report => report.id !== r.id));
+                                                    } catch (err) {
+                                                        alert('Failed to delete report');
+                                                    }
+                                                }
+                                            }}
+                                            style={{
+                                                background: 'none',
+                                                border: 'none',
+                                                color: '#ef4444',
+                                                cursor: 'pointer',
+                                                fontWeight: 'bold',
+                                                fontSize: '0.8rem',
+                                                marginLeft: 'auto'
+                                            }}
+                                        >
+                                            Effacer
+                                        </button>
+                                    )}
                                 </div>
                                 <h4>{r.type}</h4>
                                 <p className="desc">{r.description.substring(0, 100)}...</p>
@@ -356,17 +384,21 @@ function SignalisationForm({ user, setView }) {
                 <div className="form-row">
                     <div className="form-group">
                         <label>Programme (village)</label>
-                        <input
-                            type="text"
+                        <select
                             name="village"
                             className={invalidFields.has('village') ? 'invalid' : ''}
-                            placeholder="Ex: Village SOS Paris"
                             value={reportData.village}
                             onChange={handleFormChange}
                             onBlur={handleBlur}
                             required
-                        />
-                        {invalidFields.has('village') && <div className="error-message">Please specify the village.</div>}
+                        >
+                            <option value="">Sélectionnez un village</option>
+                            <option value="Gammarth">Gammarth</option>
+                            <option value="Akouda">Akouda</option>
+                            <option value="Siliana">Siliana</option>
+                            <option value="Mahres">Mahres</option>
+                        </select>
+                        {invalidFields.has('village') && <div className="error-message">Please select a village.</div>}
                     </div>
                     <div className="form-group">
                         <label>Nom & prenom de l'abuseur</label>
@@ -397,16 +429,20 @@ function SignalisationForm({ user, setView }) {
                     </div>
                     <div className="form-group">
                         <label>Location (city/area)</label>
-                        <input
-                            type="text"
+                        <select
                             name="location"
                             className={invalidFields.has('location') ? 'invalid' : ''}
-                            placeholder="City"
                             value={reportData.location}
                             onChange={handleFormChange}
                             onBlur={handleBlur}
                             required
-                        />
+                        >
+                            <option value="">Sélectionnez un village</option>
+                            <option value="Gammarth">Gammarth</option>
+                            <option value="Akouda">Akouda</option>
+                            <option value="Siliana">Siliana</option>
+                            <option value="Mahres">Mahres</option>
+                        </select>
                         {invalidFields.has('location') && <div className="error-message">Location is required.</div>}
                     </div>
                 </div>

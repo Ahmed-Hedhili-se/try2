@@ -26,12 +26,18 @@ app.use('/api', reportsRoutes);
 
 const PORT = 5000;
 
+const ALLOWED_VILLAGES = ['Gammarth', 'Akouda', 'Siliana', 'Mahres'];
+
 // Sign Up Endpoint
 app.post('/api/signup', async (req, res) => {
-    const { fullname, email, password, role, ville } = req.body;
+    const { fullname, email, password, role, village } = req.body;
 
-    if (!fullname || !email || !password || !role || !ville) {
+    if (!fullname || !email || !password || !role || !village) {
         return res.status(400).json({ message: 'All fields are required' });
+    }
+
+    if (!ALLOWED_VILLAGES.includes(village)) {
+        return res.status(400).json({ message: 'Village invalide' });
     }
 
     try {
@@ -50,9 +56,9 @@ app.post('/api/signup', async (req, res) => {
             see_all = 1;
         }
 
-        const sql = `INSERT INTO users (full_name, mail, password, role, ville, signalisation_psy, signalisation_other, see_all, is_approved) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+        const sql = `INSERT INTO users (full_name, mail, password, role, village, signalisation_psy, signalisation_other, see_all, is_approved) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
 
-        db.run(sql, [fullname, email, hashedPassword, role, ville, signalisation_psy, signalisation_other, see_all, 0], function (err) {
+        db.run(sql, [fullname, email, hashedPassword, role, village, signalisation_psy, signalisation_other, see_all, 0], function (err) {
             if (err) {
                 if (err.message.includes('UNIQUE constraint failed')) {
                     return res.status(400).json({ message: 'User already exists' });
@@ -99,7 +105,7 @@ app.post('/api/login', (req, res) => {
                 fullname: user.full_name,
                 email: user.mail,
                 role: user.role,
-                ville: user.ville,
+                village: user.village,
                 signalisation_psy: user.signalisation_psy,
                 signalisation_other: user.signalisation_other,
                 see_all: user.see_all,

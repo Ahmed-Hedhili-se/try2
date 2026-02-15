@@ -16,7 +16,7 @@ const db = new sqlite3.Database(dbPath, (err) => {
       role TEXT,
       mail TEXT UNIQUE,
       password TEXT,
-      ville TEXT,
+      village TEXT,
       signalisation_other INTEGER DEFAULT 0,
       signalisation_psy INTEGER DEFAULT 0,
       see_all INTEGER DEFAULT 0,
@@ -24,6 +24,18 @@ const db = new sqlite3.Database(dbPath, (err) => {
     )`, (err) => {
       if (err) {
         console.error('Error creating table', err.message);
+      } else {
+        // Migration: Rename ville to village if necessary
+        db.run(`ALTER TABLE users RENAME COLUMN ville TO village`, (err) => {
+          if (err) {
+            // Error is expected if column is already renamed or doesn't exist
+            if (!err.message.includes("no such column") && !err.message.includes("duplicate column name")) {
+              // console.log("Migration (ville -> village) note:", err.message);
+            }
+          } else {
+            console.log("Database Migration: Renamed 'ville' to 'village' successful.");
+          }
+        });
       }
     });
 
