@@ -1,0 +1,18 @@
+# This project is built using Node.js and relies on npm for dependency management.
+# No Python dependencies are required for the core application.
+# Please refer to the package.json files in the 'client' and 'server' directories.
+
+# Client Dependencies:
+# - axios
+# - react
+# - react-dom
+# - vite
+
+# Server Dependencies:
+# - bcryptjs
+# - cors
+# - express
+# - multer
+# - nanoid
+# - open
+# - sqlite3

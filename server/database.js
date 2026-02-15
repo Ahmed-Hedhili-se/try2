@@ -61,6 +61,8 @@ const db = new sqlite3.Database(dbPath, (err) => {
         audio_filename TEXT,
         audio_mimetype TEXT,
         audio_size INTEGER,
+        attached_file TEXT, -- Path to standard file attachment
+        audio_record TEXT,  -- Path to voice recording
         psy_notes TEXT,
         urgency TEXT,
         director_decision TEXT,
@@ -75,6 +77,26 @@ const db = new sqlite3.Database(dbPath, (err) => {
         db.run(`ALTER TABLE signalisation ADD COLUMN village TEXT`, (err) => { });
         db.run(`ALTER TABLE signalisation ADD COLUMN abuser_name TEXT`, (err) => { });
         db.run(`ALTER TABLE signalisation ADD COLUMN child_name TEXT`, (err) => { });
+        db.run(`ALTER TABLE signalisation ADD COLUMN attached_file TEXT`, (err) => { });
+        db.run(`ALTER TABLE signalisation ADD COLUMN audio_record TEXT`, (err) => { });
+      }
+    });
+
+    db.run(`
+      CREATE TABLE IF NOT EXISTS signalisation_attachments (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        uuid TEXT UNIQUE,
+        signalisation_id INTEGER,
+        filename TEXT,
+        original_name TEXT,
+        mimetype TEXT,
+        type TEXT, -- 'vocal' or 'file'
+        created_at TEXT,
+        FOREIGN KEY (signalisation_id) REFERENCES signalisation (id)
+      )
+    `, (err) => {
+      if (err) {
+        console.error('Error creating table signalisation_attachments', err.message);
       }
     });
   }

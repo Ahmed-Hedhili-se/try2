@@ -1,103 +1,156 @@
-# Premium Admin Auth & Approval Web App
+# SignalSafe - SOS Villages d'Enfants
 
-A sophisticated full-stack web application featuring a premium React frontend, a secure Node.js Express backend, and a complete administrative approval workflow.
+**SignalSafe** is a comprehensive full-stack web application designed for the SOS Villages d'Enfants organization. It provides a secure, role-based platform for reporting, analyzing, and managing child protection signalisations across various villages (Gammarth, Akouda, Siliana, Mahres).
 
 ## 🌟 Key Features
 
+### �️ Secure Reporting & Workflow
+- **Role-Based Access Control (RBAC)**: Tailored dashboards and permissions for various roles:
+  - **Mère SOS / Tante SOS / Educatrice**: Can submit initial signalisations.
+  - **Psychologues / Responsable Sociale**: Dedicated analysis tools and report management.
+  - **Directeur / Bureau National**: Strict oversight and analytical capabilities.
+- **Village-Specific Logic**: Users are restricted to their assigned SOS Village, ensuring data privacy and relevance.
+- **Secure Authentication**: Built with `bcryptjs` for password hashing and distinct login/signup flows.
+- **Attachment Support**: Upload images, documents, and voice recordings securely.
+
 ### 💎 User Experience
-- **Premium UI**: Modern gradients, glassmorphism, and smooth transitions built with custom CSS.
-- **Dynamic Auth**: Seamless switching between Login and Sign-up modes.
-- **City Tracking**: Automatically captures and displays user city (`ville`).
+- **Premium UI**: Crafted with a modern, responsive design featuring glassmorphism, smooth transitions, and distinct color codes for report statuses.
+- **Real-time Feedback**: Interactive forms and modal views for seamless data entry and review.
+- **Dynamic Dashboards**: Personalized views based on user roles (e.g., specific "My Signalisation" vs. "All Signalisation").
 
-### 🛠️ Administrative & Analysis Tools
-- **Admin Dashboard**: Dedicated management interface at `/admin.html`.
-- **Analyse Reports**: Premium visualization interface at `/analyse.html` for tracking all signalisations.
-- **Approval Workflow**: New accounts are created as `Pending` and must be approved by an administrator before they can log in.
-- **User Management**: Admins can approve, edit profile details (Name, Role, City), or delete users directly from the dashboard.
-
-### 🔐 Security & Data
-- **RBAC Logic**: Robust Role-Based Access Control filtering features and API access.
-- **Session Bridge**: Built-in synchronization between React (port 5173) and static pages (port 5000).
-- **Password Hashing**: Secure storage using `bcryptjs`.
-- **SQLite Database**: Lightweight, portable, and efficient data management.
+### � Data Integrity & Security
+- **Restricted Deletion**: To maintain a complete audit trail, deletion of reports is strictly disabled for all users, including administrators.
+- **Session bridging**: Synchronized user state between the React frontend and static HTML analysis pages.
+- **SQLite Database**: Efficient, portable database solution for robust data management.
 
 ---
 
-## 🏗️ Project Structure
+## 🛠️ Tech Stack
 
-```text
-├── client/          # vite + React Frontend
-│   ├── src/         # UI Components and state logic
-│   └── index.css    # Premium CSS design system
-├── server/          # Node.js Express Backend
-│   ├── index.js     # API & Server Logic
-│   ├── database.js  # SQLite Connection & Schema
-│   ├── routes/      # API Route modules (admin.js, reports.js)
-│   └── public/      # Static Assets (admin.html, analyse.html, dashboard.html)
-└── .gitignore       # Git ignore rules
-```
+### Frontend
+- **React**: For building dynamic, component-based user interfaces.
+- **Vite**: Next-generation frontend tooling for fast builds and hot module replacement.
+- **CSS**: Custom, premium styling (no reliance on heavy CSS frameworks).
+
+### Backend
+- **Node.js**: Asynchronous event-driven JavaScript runtime.
+- **Express.js**: Fast, unopinionated, minimalist web framework for Node.js.
+- **SQLite3**: Self-contained, serverless, zero-configuration, transactional SQL database engine.
+- **Multer**: Node.js middleware for handling `multipart/form-data` (file uploads).
 
 ---
 
 ## 🚀 Getting Started
 
-### 1. Installation
-Clone the repository and install dependencies for both the server and client:
+### Prerequisites
+- **Node.js** (v14 or higher)
+- **npm** (Node Package Manager)
 
-**Backend:**
-```bash
-cd server
-npm install
-```
+### Installation
 
-**Frontend:**
-```bash
-cd client
-npm install
-```
+1.  **Clone the Repository**
+    ```bash
+    git clone https://github.com/your-username/SignalSafe.git
+    cd SignalSafe
+    ```
 
-### 2. Running Local Dev Servers
-The application is designed to auto-open the admin interface on startup.
+2.  **Install Backend Dependencies**
+    ```bash
+    cd server
+    npm install
+    # This installs: express, sqlite3, cors, bcryptjs, multer, nanoid, open
+    ```
 
-**Start the Backend:**
-```bash
-cd server
-npm start
-```
-*The server runs on `http://localhost:5000` and will try to open `http://localhost:5000/admin.html` automatically.*
+3.  **Install Frontend Dependencies**
+    ```bash
+    cd ../client
+    npm install
+    # This installs: react, react-dom, axios, vite
+    ```
 
-**Start the Frontend:**
-```bash
-cd client
-npm run dev
-```
-*The React app runs on `http://localhost:5173`.*
+### Running the Application
+
+1.  **Start the Backend Server**
+    ```bash
+    cd server
+    npm start
+    ```
+    *   The server will start on `http://localhost:5000`.
+    *   It may automatically open the Admin Dashboard (`http://localhost:5000/admin.html`) in your browser.
+
+2.  **Start the Frontend Development Server**
+    Open a *new terminal window/tab* and run:
+    ```bash
+    cd client
+    npm run dev
+    ```
+    *   The frontend will run on `http://localhost:5173`.
+    *   Open this URL to access the main Login/Signup page.
 
 ---
 
-## 🛠️ Troubleshooting
+## � Project Structure
 
-If you encounter "Cannot reach server" or other errors:
-
-1.  **Check Backend**: Ensure the terminal running `npm start` in the `server` folder is still alive and showing no errors.
-2.  **Verify Setup**: Ensure all dependencies are installed (`npm install`) and the database file (`database.sqlite`) exists.
-3.  **Browser Console**: Press **F12** and check the **Console** tab for specific error messages (e.g., Connection Refused).
-
----
-
-1.  **Sign Up**: Go to `http://localhost:5173`, choose a role (Mère SOS, etc.), and register.
-2.  **Verify Pending**: Try to log in immediately—the app will inform you that your account is pending approval.
-3.  **Approve Account**: Open the Admin Dashboard at `http://localhost:5000/admin.html`. Find your new user and click **Approve**.
-4.  **Success**: Log in again from the main app. You should now be granted access to your home dashboard!
+```text
+try2/
+├── client/                 # React Frontend application
+│   ├── src/                # UI Components, pages, and logic
+│   │   ├── App.jsx         # Main application component & routing
+│   │   ├── index.css       # Global styles & design system
+│   │   └── main.jsx        # Entry point
+│   ├── index.html          # HTML template
+│   ├── package.json        # Frontend dependencies
+│   └── vite.config.js      # Vite configuration
+│
+├── server/                 # Node.js Express Backend
+│   ├── routes/             # API Route modules
+│   │   ├── admin.js        # Admin endpoints
+│   │   └── reports.js      # Signalisation & attachment logic
+│   ├── public/             # Static HTML pages (Dashboards, Analysis)
+│   │   ├── admin.html      # Admin User Management
+│   │   ├── analyse.html    # Report Analysis Dashboard
+│   │   ├── dashboard.html  # User Dashboard (Legacy/Static)
+│   │   └── global_vue.html # Global Governance View
+│   ├── uploads/            # Secure directory for uploaded files
+│   ├── database.js         # SQLite connection & schema initialization
+│   ├── index.js            # Main server entry & configuration
+│   └── package.json        # Backend dependencies
+│
+├── requirements.txt        # Dependency summary
+└── README.md               # Project documentation
+```
 
 ---
 
 ## 📋 Role & Permission Mapping
 
-The system automatically handles permissions based on the chosen role:
-- **Mère/Tante/Educatrice**: Assigned to `signalisation_other`.
-- **Psychologues/Responsable Sociale**: Assigned to `signalisation_psy`.
-- **Directeur/Bureau National**: Assigned to `see_all` (Managed manually).
+The system enforces strict RBAC rules:
+
+| Role | Access Level | Primary Dashboard |
+| :--- | :--- | :--- |
+| **Mère / Tante SOS** | **Submitter** | Main Dashboard (`/`) |
+| **Educatrice** | **Submitter** | Main Dashboard (`/`) |
+| **Psychologues** | **Analyst** | Analysis Dashboard (`/analyse.html`) |
+| **Responsable Sociale** | **Analyst** | Analysis Dashboard (`/analyse.html`) |
+| **Directeur** | **Reviewer** | Global View (Village Specific) |
+| **Bureau National** | **Super Admin** | Global View (National Scope) |
 
 ---
+
+## 🤝 Contributing
+
+1.  Fork the repository.
+2.  Create a new branch (`git checkout -b feature/AmazingFeature`).
+3.  Commit your changes (`git commit -m 'Add some AmazingFeature'`).
+4.  Push to the branch (`git push origin feature/AmazingFeature`).
+5.  Open a Pull Request.
+
+---
+
+## 📄 License
+
+Distributed under the MIT License. See `LICENSE` for more information.
+
+---
+
 *Built with ❤️ by Antigravity*

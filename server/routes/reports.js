@@ -12,9 +12,8 @@ const storage = multer.diskStorage({
         cb(null, 'uploads/');
     },
     filename: (req, file, cb) => {
-        const ext = path.extname(file.originalname);
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        cb(null, uniqueSuffix + ext);
+        cb(null, uniqueSuffix + '-' + file.originalname);
     }
 });
 
@@ -23,11 +22,14 @@ const upload = multer({
     limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
     fileFilter: (req, file, cb) => {
         if (file.mimetype.startsWith('image/') ||
+            file.mimetype.startsWith('video/') ||
             file.mimetype.startsWith('audio/') ||
-            file.mimetype === 'application/pdf') {
+            file.mimetype === 'application/pdf' ||
+            file.mimetype === 'application/msword' ||
+            file.mimetype === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
             cb(null, true);
         } else {
-            cb(new Error('Only images, audio, and PDF files are allowed!'), false);
+            cb(new Error('File type not allowed!'), false);
         }
     }
 });
@@ -45,8 +47,8 @@ const ALLOWED_VILLAGES = ['Gammarth', 'Akouda', 'Siliana', 'Mahres'];
 
 // Submit Signalisation
 router.post('/reports', upload.fields([
-    { name: 'photo', maxCount: 1 },
-    { name: 'audio', maxCount: 1 }
+    { name: 'attached_file', maxCount: 1 },
+    { name: 'audio_record', maxCount: 1 }
 ]), (req, res) => {
     const { anonymous, village, abuser_name, child_name, childAge, relationship, location, type, description, urgency, submitterId } = req.body;
 
@@ -62,23 +64,21 @@ router.post('/reports', upload.fields([
     const created_at = new Date().toISOString();
     const isAnonymous = anonymous === 'true' || anonymous === true ? 1 : 0;
 
-    const photo = req.files['photo'] ? req.files['photo'][0] : null;
-    const audio = req.files['audio'] ? req.files['audio'][0] : null;
+    const attachedFile = req.files['attached_file'] ? req.files['attached_file'][0].filename : null;
+    const audioRecord = req.files['audio_record'] ? req.files['audio_record'][0].filename : null;
 
     const sql = `INSERT INTO signalisation (
         report_id, created_at, anonymous, submitter_id, 
         village, abuser_name, child_name,
         child_age, relationship, location, type, description, urgency,
-        photo_filename, photo_mimetype, photo_size,
-        audio_filename, audio_mimetype, audio_size
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+        attached_file, audio_record
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
 
     const params = [
         report_id, created_at, isAnonymous, submitterId,
         village, abuser_name, child_name,
         childAge, relationship, location, type, description, urgency,
-        photo?.filename, photo?.mimetype, photo?.size,
-        audio?.filename, audio?.mimetype, audio?.size
+        attachedFile, audioRecord
     ];
 
     db.run(sql, params, function (err) {
@@ -176,7 +176,7 @@ router.delete('/reports/:id', (req, res) => {
     const userRole = req.headers['x-user-role'];
     const { id } = req.params;
 
-    if (userRole !== 'directeur' && userRole !== 'bureau national') {
+    if (true) { // Deletion disabled
         return res.status(403).json({ message: 'Accès non autorisé' });
     }
 
@@ -280,7 +280,7 @@ router.get('/global/signalisations', (req, res) => {
     const userRole = req.headers['x-user-role'];
     const userId = req.headers['x-user-id'];
 
-    if (userRole !== 'directeur' && userRole !== 'bureau national') {
+    if (true) { // Deletion disabled
         return res.status(403).json({ message: 'Accès non autorisé' });
     }
 
@@ -312,6 +312,52 @@ router.get('/global/signalisations', (req, res) => {
                 role: userRole
             });
         });
+    });
+});
+
+// POST Attachment (Vocal or Generic File)
+router.post('/signalisations/:id/attachments', upload.single('attachment'), (req, res) => {
+    const { id } = req.params;
+    const { type } = req.body; // 'vocal' or 'file'
+    const file = req.file;
+
+    if (!file) {
+        return res.status(400).json({ message: 'No file uploaded' });
+    }
+
+    const uuid = nanoid(10);
+    const created_at = new Date().toISOString();
+
+    const sql = `INSERT INTO signalisation_attachments (
+        uuid, signalisation_id, filename, original_name, mimetype, type, created_at
+    ) VALUES (?, ?, ?, ?, ?, ?, ?)`;
+
+    const params = [
+        uuid, id, file.filename, file.originalname, file.mimetype, type || 'file', created_at
+    ];
+
+    db.run(sql, params, function (err) {
+        if (err) return res.status(500).json({ message: err.message });
+        res.status(201).json({
+            message: 'Attachment uploaded successfully',
+            attachment: {
+                uuid,
+                filename: file.filename,
+                original_name: file.originalname,
+                type: type || 'file',
+                created_at
+            }
+        });
+    });
+});
+
+// GET Attachments for a Signalisation
+router.get('/signalisations/:id/attachments', (req, res) => {
+    const { id } = req.params;
+    const sql = `SELECT * FROM signalisation_attachments WHERE signalisation_id = ? ORDER BY created_at ASC`;
+    db.all(sql, [id], (err, rows) => {
+        if (err) return res.status(500).json({ message: err.message });
+        res.status(200).json(rows);
     });
 });
 

@@ -88,21 +88,49 @@ function App() {
     }
 
     return (
-        <div className="container">
-            <div className="card">
-                <h1>{isLogin ? 'Welcome Back' : 'Create Account'}</h1>
-                <p className="subtitle">
-                    {isLogin ? 'Enter your credentials to access your account' : 'Join us today and start your journey'}
-                </p>
+        <div className="auth-page">
+            <nav className="auth-header">
+                <div className="header-logo">
+                    <img
+                        src="https://www.sos-maroc.org/wp-content/uploads/2022/06/sos-logo-1024x352.png"
+                        alt="SOS Logo"
+                    />
+                </div>
+                <div className="header-nav">
+                    <button
+                        className={`nav-link ${isLogin ? 'active' : ''}`}
+                        onClick={() => setIsLogin(true)}
+                    >
+                        Sign in
+                    </button>
+                    <button
+                        className={`nav-link ${!isLogin ? 'active' : ''}`}
+                        onClick={() => setIsLogin(false)}
+                    >
+                        Sign up
+                    </button>
+                </div>
+            </nav>
+
+            <div className="shape circle-1"></div>
+            <div className="shape circle-2"></div>
+            <div className="shape circle-3"></div>
+
+            <div className="auth-form-container">
+
+                <div className="auth-header-text">
+                    <h1>{isLogin ? 'Sign in' : 'Sign up'}</h1>
+                </div>
 
                 <form onSubmit={handleSubmit}>
                     {!isLogin && (
                         <div className="form-group">
-                            <label>Full Name</label>
+                            <label>Nom complet</label>
                             <input
                                 type="text"
                                 name="fullname"
-                                placeholder="John Doe"
+                                className="minimalist-input"
+                                placeholder="Jean Dupont"
                                 value={formData.fullname}
                                 onChange={handleChange}
                                 required
@@ -111,11 +139,12 @@ function App() {
                     )}
 
                     <div className="form-group">
-                        <label>Email Address</label>
+                        <label>Adresse e-mail</label>
                         <input
                             type="email"
                             name="email"
-                            placeholder="name@example.com"
+                            className="minimalist-input"
+                            placeholder="nom@exemple.com"
                             value={formData.email}
                             onChange={handleChange}
                             required
@@ -123,10 +152,11 @@ function App() {
                     </div>
 
                     <div className="form-group">
-                        <label>Password</label>
+                        <label>Mot de passe</label>
                         <input
                             type="password"
                             name="password"
+                            className="minimalist-input"
                             placeholder="••••••••"
                             value={formData.password}
                             onChange={handleChange}
@@ -136,11 +166,20 @@ function App() {
 
                     {!isLogin && (
                         <div className="form-group">
-                            <label>Role</label>
-                            <select name="role" value={formData.role} onChange={handleChange}>
+                            <label>Rôle</label>
+                            <select
+                                name="role"
+                                className="minimalist-input"
+                                value={formData.role}
+                                onChange={handleChange}
+                            >
                                 <option value="mere">Mère SOS</option>
                                 <option value="tante">Tante SOS</option>
                                 <option value="educatrice">Educatrice</option>
+                                <option value="psychologues">Psychologues</option>
+                                <option value="responsable sociale">Responsable sociale</option>
+                                <option value="directeur">Directeur</option>
+                                <option value="bureau national">Bureau national</option>
                             </select>
                         </div>
                     )}
@@ -148,7 +187,13 @@ function App() {
                     {!isLogin && (
                         <div className="form-group">
                             <label>Village SOS</label>
-                            <select name="village" value={formData.village} onChange={handleChange} required>
+                            <select
+                                name="village"
+                                className="minimalist-input"
+                                value={formData.village}
+                                onChange={handleChange}
+                                required
+                            >
                                 <option value="">Sélectionnez un village</option>
                                 <option value="Gammarth">Gammarth</option>
                                 <option value="Akouda">Akouda</option>
@@ -158,21 +203,24 @@ function App() {
                         </div>
                     )}
 
-                    <button type="submit">{isLogin ? 'Login' : 'Sign Up'}</button>
+                    <button type="submit" className="sos-btn">
+                        {isLogin ? 'Se connecter' : 'S\'inscrire'}
+                    </button>
                 </form>
 
                 <div className={`status-msg ${message.type}`}>
                     {message.text}
                 </div>
 
-                <div className="toggle-link">
+                <div className="sos-toggle-link">
                     {isLogin ? (
-                        <>Don't have an account? <span onClick={() => setIsLogin(false)}>Sign Up</span></>
+                        <>Vous n'avez pas de compte ? <span onClick={() => setIsLogin(false)}>S'inscrire</span></>
                     ) : (
-                        <>Already have an account? <span onClick={() => setIsLogin(true)}>Login</span></>
+                        <>Vous avez déjà un compte ? <span onClick={() => setIsLogin(true)}>Se connecter</span></>
                     )}
                 </div>
             </div>
+            <Footer />
         </div>
     );
 }
@@ -233,34 +281,7 @@ function Dashboard({ user, setView }) {
                                     <span className={`status-pill ${r.status.toLowerCase()}`}>{r.status}</span>
                                     <p>Village: {r.village}</p>
                                     <p>Submitted: {new Date(r.created_at).toLocaleDateString()}</p>
-                                    {(user.role === 'directeur' || user.role === 'bureau national') && (
-                                        <button
-                                            className="delete-report-btn"
-                                            onClick={async () => {
-                                                if (window.confirm('Are you sure you want to delete this report?')) {
-                                                    try {
-                                                        await axios.delete(`${API_URL}/reports/${r.id}`, {
-                                                            headers: { 'x-user-role': user.role }
-                                                        });
-                                                        setReports(reports.filter(report => report.id !== r.id));
-                                                    } catch (err) {
-                                                        alert('Failed to delete report');
-                                                    }
-                                                }
-                                            }}
-                                            style={{
-                                                background: 'none',
-                                                border: 'none',
-                                                color: '#ef4444',
-                                                cursor: 'pointer',
-                                                fontWeight: 'bold',
-                                                fontSize: '0.8rem',
-                                                marginLeft: 'auto'
-                                            }}
-                                        >
-                                            Effacer
-                                        </button>
-                                    )}
+                                    {/* Delete functionality removed */}
                                 </div>
                                 <h4>{r.type}</h4>
                                 <p className="desc">{r.description.substring(0, 100)}...</p>
@@ -292,6 +313,12 @@ function SignalisationForm({ user, setView }) {
     const [submitting, setSubmitting] = useState(false);
     const [msg, setMsg] = useState({ text: '', type: '' });
 
+    // Voice Recording State
+    const [isRecording, setIsRecording] = useState(false);
+    const [mediaRecorder, setMediaRecorder] = useState(null);
+    const [audioBlob, setAudioBlob] = useState(null);
+    const [audioURL, setAudioURL] = useState('');
+
     const validateField = (name, value) => {
         const required = ['child_name', 'village', 'type', 'location', 'description', 'urgency_level'];
         if (required.includes(name)) {
@@ -315,7 +342,6 @@ function SignalisationForm({ user, setView }) {
         const val = inputType === 'checkbox' ? checked : value;
         setReportData(prev => ({ ...prev, [name]: val }));
 
-        // Inline validation if it was already marked as invalid
         if (invalidFields.has(name)) {
             validateField(name, val);
         }
@@ -323,6 +349,39 @@ function SignalisationForm({ user, setView }) {
 
     const handleBlur = (e) => {
         validateField(e.target.name, e.target.value);
+    };
+
+    // Voice Recording Logic
+    const startRecording = async () => {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            const recorder = new MediaRecorder(stream);
+            const chunks = [];
+
+            recorder.ondataavailable = (e) => chunks.push(e.data);
+            recorder.onstop = () => {
+                const blob = new Blob(chunks, { type: 'audio/webm' });
+                setAudioBlob(blob);
+                setAudioURL(URL.createObjectURL(blob));
+            };
+
+            recorder.start();
+            setMediaRecorder(recorder);
+            setIsRecording(true);
+            setAudioBlob(null);
+            setAudioURL('');
+        } catch (err) {
+            console.error('Microphone access denied', err);
+            alert('Veuillez autoriser l\'accès au microphone pour enregistrer un message vocal.');
+        }
+    };
+
+    const stopRecording = () => {
+        if (mediaRecorder && isRecording) {
+            mediaRecorder.stop();
+            setIsRecording(false);
+            mediaRecorder.stream.getTracks().forEach(track => track.stop());
+        }
     };
 
     const handleSubmit = async (e) => {
@@ -356,8 +415,21 @@ function SignalisationForm({ user, setView }) {
         formData.append('urgency', reportData.urgency_level);
         formData.append('submitterId', user.id);
 
+        // Attach file
+        const fileInput = document.getElementById('attached_file');
+        if (fileInput && fileInput.files[0]) {
+            formData.append('attached_file', fileInput.files[0]);
+        }
+
+        // Voice record
+        if (audioBlob) {
+            formData.append('audio_record', audioBlob, 'voice_record.webm');
+        }
+
         try {
-            await axios.post(`${API_URL}/reports`, formData);
+            await axios.post(`${API_URL}/reports`, formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
             setMsg({ text: 'Signalisation submitted successfully!', type: 'success' });
             setTimeout(() => setView('home'), 2000);
         } catch (err) {
@@ -370,7 +442,7 @@ function SignalisationForm({ user, setView }) {
     return (
         <div className="report-view card">
             <h1>SignalSafe</h1>
-            <p class="subtitle">Submit a safe and secure incident report</p>
+            <p className="subtitle">Submit a safe and secure incident report</p>
 
             <form onSubmit={handleSubmit} className="report-form" noValidate>
                 <div className="form-group checkbox-group">
@@ -499,13 +571,138 @@ function SignalisationForm({ user, setView }) {
                     {invalidFields.has('description') && <div className="error-message">Please provide a description.</div>}
                 </div>
 
-                <button type="submit" disabled={submitting}>
+                {/* Attachments Section */}
+                <div className="form-row" style={{ marginTop: '20px', borderTop: '1px solid #eff5f9', paddingTop: '20px' }}>
+                    <div className="form-group">
+                        <label htmlFor="attached_file">📎 Pièce jointe</label>
+                        <input
+                            type="file"
+                            id="attached_file"
+                            name="attached_file"
+                            className="minimalist-input"
+                            accept="image/*,video/*,.pdf,.doc,.docx"
+                            style={{
+                                background: 'white',
+                                padding: '10px',
+                                fontSize: '0.8rem'
+                            }}
+                        />
+                    </div>
+                    <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                        <label>🎤 Message Vocal</label>
+                        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                            {!isRecording ? (
+                                <button
+                                    type="button"
+                                    onClick={startRecording}
+                                    style={{
+                                        background: '#FEE2E2',
+                                        color: '#DC2626',
+                                        border: '1px solid #FCA5A5',
+                                        padding: '8px 16px',
+                                        borderRadius: '0.5rem',
+                                        fontSize: '0.8rem',
+                                        fontWeight: '600'
+                                    }}
+                                >
+                                    🎤 Start Recording
+                                </button>
+                            ) : (
+                                <button
+                                    type="button"
+                                    onClick={stopRecording}
+                                    style={{
+                                        background: '#374151',
+                                        color: 'white',
+                                        border: 'none',
+                                        padding: '8px 16px',
+                                        borderRadius: '0.5rem',
+                                        fontSize: '0.8rem',
+                                        fontWeight: '600',
+                                        animation: 'pulse 1.5s infinite'
+                                    }}
+                                >
+                                    ⏹️ Stop
+                                </button>
+                            )}
+                            {isRecording && (
+                                <span style={{ color: '#DC2626', fontSize: '0.75rem', fontWeight: 'bold' }}>
+                                    Rec...
+                                </span>
+                            )}
+                        </div>
+                        {audioURL && (
+                            <audio
+                                id="audio-playback"
+                                src={audioURL}
+                                controls
+                                style={{
+                                    width: '100%',
+                                    height: '40px',
+                                    marginTop: '5px'
+                                }}
+                            />
+                        )}
+                    </div>
+                </div>
+
+                <style>{`
+                    @keyframes pulse {
+                        0% { opacity: 1; }
+                        50% { opacity: 0.6; }
+                        100% { opacity: 1; }
+                    }
+                `}</style>
+
+                <button type="submit" disabled={submitting} style={{ marginTop: '30px' }}>
                     {submitting ? 'Submitting...' : '🚀 Submit Report'}
                 </button>
             </form>
 
             {msg.text && <div className={`status-msg ${msg.type}`}>{msg.text}</div>}
         </div>
+    );
+}
+
+
+function Footer() {
+    return (
+        <footer className="app-footer">
+            <div className="footer-content">
+                <div className="footer-section">
+                    <h3>Avez-vous des questions ?</h3>
+                    <p>Appelez ou visitez-nous</p>
+                    <div className="footer-phone">+(216)58 371 002</div>
+                    <p>SOS Village d’Enfants Gammarth</p>
+                    <p>E-mail : parrainage.enfants@sos-tunisie.org</p>
+                </div>
+                <div className="footer-section">
+                    <h3>Newsletter</h3>
+                    <p>Soyez informé(e) de nos actions et devenez acteur du changement</p>
+                    <div className="newsletter-form">
+                        <input type="email" placeholder="Votre adresse e-mail..." />
+                        <button className="submit-btn" type="button">SOUSCRIRE</button>
+                    </div>
+                </div>
+                <div className="footer-section">
+                    <h3>Suivez-Nous sur</h3>
+                    <div className="social-links">
+                        <a href="https://www.facebook.com/ATVESOS" className="social-link" target="_blank" rel="noopener noreferrer">
+                            <svg viewBox="0 0 24 24" fill="currentColor" width="24" height="24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" /></svg>
+                        </a>
+                        <a href="https://instagram.com/sos_villages_tunisie?igshid=NTc4MTIwNjQ2YQ==" className="social-link" target="_blank" rel="noopener noreferrer">
+                            <svg viewBox="0 0 24 24" fill="currentColor" width="24" height="24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.791-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.209-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" /></svg>
+                        </a>
+                        <a href="https://www.linkedin.com/company/sos-villages-d-enfants-en-tunisie/" className="social-link" target="_blank" rel="noopener noreferrer">
+                            <svg viewBox="0 0 24 24" fill="currentColor" width="24" height="24"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" /></svg>
+                        </a>
+                        <a href="#" className="social-link">
+                            <svg viewBox="0 0 24 24" fill="currentColor" width="24" height="24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" /></svg>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </footer>
     );
 }
 

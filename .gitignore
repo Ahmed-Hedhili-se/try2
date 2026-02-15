@@ -16,3 +16,15 @@ Thumbs.db
 
 # Uploads
 server/uploads/
+
+# Backups
+
+# Backups
+try2-master/
+
+# Temporary test files & logs
+debug_*.json
+*_test.json
+mock*.pdf
+*.log
+*.tmp

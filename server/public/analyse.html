@@ -8,13 +8,13 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #6366f1;
-            --primary-hover: #4f46e5;
-            --bg: #0f172a;
-            --card-bg: rgba(30, 41, 59, 0.7);
-            --text: #f8fafc;
-            --text-muted: #94a3b8;
-            --glass-border: rgba(255, 255, 255, 0.1);
+            --primary: #00adee;
+            --primary-hover: #6ccef6;
+            --bg: #eff5f9;
+            --card-bg: rgba(255, 255, 255, 0.95);
+            --text: #163260;
+            --text-muted: #64748b;
+            --glass-border: rgba(0, 173, 238, 0.1);
         }
 
         * {
@@ -24,11 +24,11 @@
         }
 
         body {
+            background-color: var(--bg);
             font-family: 'Outfit', sans-serif;
-            background: radial-gradient(circle at top right, #1e1b4b, #0f172a);
             color: var(--text);
-            min-height: 100vh;
             padding: 2rem;
+            min-height: 100vh;
         }
 
         .container {
@@ -48,7 +48,7 @@
         .nav-brand {
             font-size: 1.5rem;
             font-weight: 800;
-            background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+            background: linear-gradient(135deg, #6ccef6 0%, #00adee 100%);
             background-clip: text;
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -161,6 +161,8 @@
             padding: 2.5rem;
             border: 1px solid var(--glass-border);
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            max-height: 85vh;
+            overflow-y: auto;
         }
 
         .modal-grid {
@@ -266,6 +268,21 @@
                 <p id="mDesc" style="white-space: pre-wrap;">-</p>
             </div>
 
+            <!-- Attachments Section -->
+            <div id="attachmentsSection"
+                style="margin-top: 1.5rem; border-top: 1px solid var(--glass-border); padding-top: 1rem; display: none;">
+                <h4>PIÈCES JOINTES</h4>
+                <div id="imageAttachmentContainer" style="display: none; margin-top: 10px;">
+                    <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 5px;">📸 Image jointe :</p>
+                    <img id="modal-image-attachment" src="" alt="Attachment"
+                        style="max-width: 100%; height: auto; border-radius: 8px; border: 1px solid var(--glass-border);">
+                </div>
+                <div id="audioAttachmentContainer" style="display: none; margin-top: 15px;">
+                    <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 5px;">🎤 Message vocal :</p>
+                    <audio id="modal-audio-attachment" controls style="width: 100%;"></audio>
+                </div>
+            </div>
+
             <!-- Psychologue Actions -->
             <div id="psyActions"
                 style="display: none; margin-top: 2rem; gap: 1rem; border-top: 1px solid var(--glass-border); padding-top: 1.5rem;">
@@ -361,7 +378,7 @@
 
                     <div style="display: flex; gap: 0.5rem;">
                         <button class="details-btn" onclick='showDetails(${JSON.stringify(r).replace(/'/g, "&apos;")})'>View Details</button>
-                        ${isAdmin ? `<button class="details-btn" style="background: #ef4444;" onclick="deleteReport(${r.id})">Supprimer</button>` : ''}
+                        <!-- Suppression désactivée -->
                     </div>
                 </div>
             `).join('');
@@ -380,6 +397,37 @@
             document.getElementById('mAbuser').textContent = r.abuser_name || 'N/A';
             document.getElementById('mChild').textContent = r.child_name || 'N/A';
             document.getElementById('mDesc').textContent = r.description;
+
+            // Reset and Populate Attachments
+            const attachmentsSection = document.getElementById('attachmentsSection');
+            const imgContainer = document.getElementById('imageAttachmentContainer');
+            const audioContainer = document.getElementById('audioAttachmentContainer');
+            const imgEl = document.getElementById('modal-image-attachment');
+            const audioEl = document.getElementById('modal-audio-attachment');
+
+            imgContainer.style.display = 'none';
+            audioContainer.style.display = 'none';
+            attachmentsSection.style.display = 'none';
+            imgEl.src = '';
+            audioEl.src = '';
+
+            let hasAttachment = false;
+
+            if (r.attached_file) {
+                imgEl.src = `/uploads/${r.attached_file}`;
+                imgContainer.style.display = 'block';
+                hasAttachment = true;
+            }
+
+            if (r.audio_record) {
+                audioEl.src = `/uploads/${r.audio_record}`;
+                audioContainer.style.display = 'block';
+                hasAttachment = true;
+            }
+
+            if (hasAttachment) {
+                attachmentsSection.style.display = 'block';
+            }
 
             // RBAC Actions visibility
             const user = JSON.parse(localStorage.getItem('user'));
