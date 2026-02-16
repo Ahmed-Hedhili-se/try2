@@ -153,4 +153,4 @@ Distributed under the MIT License. See `LICENSE` for more information.
 
 ---
 
-*Built with ❤️ by Antigravity*
+*Built with ❤️*
